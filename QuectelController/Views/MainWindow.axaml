@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:QuectelController.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="QuectelController.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        MinHeight="700" MinWidth="750"
+        Title="QuectelController">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+  <DockPanel LastChildFill="True">
+    <Border Height="25" BorderBrush="Black" BorderThickness="0.5" DockPanel.Dock="Top">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open..."/>
+                <Separator/>
+                <MenuItem Header="_Exit"/>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="Copy"/>
+                <MenuItem Header="Paste"/>
+            </MenuItem>
+        </Menu>
+    </Border>
+    
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Margin="4">
+      <Label Margin="5" Grid.Row="0" Grid.Column="0">Serial Port</Label>
+      <TextBox Width="100" Margin="5" Grid.Row="0" Grid.Column="1">COM1</TextBox>
+      <Label Margin="5" Grid.Row="1" Grid.Column="0">Baudrate</Label>
+      <TextBox Width="100" Margin="5" Grid.Row="1" Grid.Column="1">9600</TextBox>
+      <Label Margin="5" Grid.Row="2" Grid.Column="0">Data bits</Label>
+      <TextBox Width="100" Margin="5" Grid.Row="2" Grid.Column="1" >8</TextBox>
+      <Label Margin="5" Grid.Row="3" Grid.Column="0">Stop bits</Label>
+      <TextBox Width="100" Margin="5" Grid.Row="3" Grid.Column="1">1</TextBox>
+      <Label Margin="5" Grid.Row="4" Grid.Column="0">Parity</Label>
+      <TextBox Width="100" Margin="5" Grid.Row="4" Grid.Column="1">None</TextBox>
+      <Button Grid.Row="5" Grid.Column="0" Content="Disconnect"/>
+      <Button Grid.Row="5" Grid.Column="1" Width="100" Content="Connect"/>
+      <Border Grid.Row="0" Grid.Column="2" Grid.RowSpan="6" BorderBrush="Black" BorderThickness="1">
+        <TreeView>
+        </TreeView>
+      </Border>
+    </Grid>
+    
+    <Border Height="25" BorderBrush="White" BorderThickness="1" DockPanel.Dock="Bottom">
+      <TextBlock FontSize="12" Foreground="Black">©Vladislav Ohera</TextBlock>
+    </Border>
+    
+
+    
+    <Border Height="35" BorderBrush="White" BorderThickness="1" DockPanel.Dock="Top">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+        <Button Width="100" Grid.Row="0" Grid.Column="1" Content="Send"/>
+        <TextBox Grid.Row="0" Grid.Column="0">COM1</TextBox>
+      </Grid>
+    </Border>
+
+    <Border BorderBrush="Black" BorderThickness="1">
+      <TextBlock Padding ="5" FontSize="12" Foreground="Black">test</TextBlock>
+    </Border>
+    
+  </DockPanel>
+</Window>
