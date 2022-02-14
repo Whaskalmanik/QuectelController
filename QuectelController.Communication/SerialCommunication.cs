@@ -1,27 +1,43 @@
 ﻿using RJCP.IO.Ports;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace QuectelController.Communication
 {
-    public class SerialCommunitacion : IDisposable
+    public class SerialCommunication : IDisposable
     {
         SerialPortStream Stream;
         private bool disposedValue;
 
         public string Interface { get; set; }
         public int Baudrate { get; set; }
+        public int DataBits { get; set; }
+        public Parity Parity { get; set; }
+        public StopBits StopBits { get; set; }
 
-        public SerialCommunitacion(string _interface, int _baudrate)
+
+
+        public SerialCommunication(string _interface, int _baudrate,int _dataBits, Parity _parity, StopBits _stopBits)
         {
             Interface = _interface;
-            Baudrate = _baudrate; 
-            Stream = new SerialPortStream(Interface, Baudrate);                  
+            Baudrate = _baudrate;
+            DataBits = _dataBits;
+            Parity = _parity;
+            StopBits = _stopBits;
+
+            Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);                  
         }
         private void OnPortChange()
         {
-            Stream = new SerialPortStream(Interface, Baudrate);
+            Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);
+        }
+
+        public static List<string> GetSerialPorts()
+        {
+            return SerialPortStream.GetPortNames().ToList();
         }
         public void Open()
         {

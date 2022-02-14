@@ -19,10 +19,6 @@ namespace QuectelController.Views
         public void button_Click(object sender, RoutedEventArgs e)
         {
             // Change button text when button is clicked.
-            using SerialCommunitacion communitacion = new SerialCommunitacion("COM2", 9600);
-            communitacion.Open();
-            string value = communitacion.Read();
-            ;
         }
 
 
