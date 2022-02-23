@@ -18,8 +18,6 @@ namespace QuectelController.Communication
         public Parity Parity { get; set; }
         public StopBits StopBits { get; set; }
 
-
-
         public SerialCommunication(string _interface, int _baudrate,int _dataBits, Parity _parity, StopBits _stopBits)
         {
             Interface = _interface;
@@ -27,7 +25,7 @@ namespace QuectelController.Communication
             DataBits = _dataBits;
             Parity = _parity;
             StopBits = _stopBits;
-
+                   
             Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);                  
         }
         private void OnPortChange()
