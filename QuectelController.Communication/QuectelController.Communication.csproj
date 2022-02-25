@@ -23,7 +23,6 @@
     <Folder Include="Commands\Short Message Service\" />
     <Folder Include="Commands\SIM\" />
     <Folder Include="Commands\Status\" />
-    <Folder Include="Commands\General\" />
   </ItemGroup>
 
 </Project>
