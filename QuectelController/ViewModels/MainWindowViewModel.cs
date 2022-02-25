@@ -6,13 +6,14 @@ using System.Text;
 using QuectelController.Communication;
 using ReactiveUI;
 using RJCP.IO.Ports;
+using QuectelController.Communication.Commands.Phonebook;
 
 namespace QuectelController.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
         SerialCommunication serialCommunication;
-
+        public List<IATCommand> CommandsList  { get; }
         public string Greeting => "Welcome to Avalonia!";
         public string Button => "Muj butttonek";
 
@@ -42,6 +43,7 @@ namespace QuectelController.ViewModels
             ConnectCommand = ReactiveCommand.Create(Connect);
             DisconnectCommand = ReactiveCommand.Create(Disconnect);
             SendCommand = ReactiveCommand.Create(Send);
+            CommandsList = FillList();
         }
 
         private void Connect()
@@ -63,7 +65,13 @@ namespace QuectelController.ViewModels
                 return;
             }
             serialCommunication.Write(ToSendValue);
-           
+            
+        }
+        private List<IATCommand> FillList()
+        {
+            List<IATCommand> commands = new List<IATCommand>();
+            commands.Add(new FindPhonebookEntriesCommand());
+            return commands;
         }
     }
 }

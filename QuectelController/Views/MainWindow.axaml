@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns ="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:QuectelController.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -38,7 +38,8 @@
       <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="4" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding Parity}" Items="{Binding Parities}"></ComboBox>
       <Button Command="{Binding DisconnectCommand}" Margin="0,1,0,0" HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="0"  Foreground="White" Background="Red" Content="Disconnect"/>
       <Button Command="{Binding ConnectCommand}" Margin="0,1,5,0"  HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="1" Foreground="White" Background="Green" Content="Connect"/>
-      <Border Grid.Row="0" Grid.Column="2" Grid.RowSpan="6" BorderBrush="Black" BorderThickness="0.5">
+      <TextBox Grid.Row="0" Grid.Column="2" Watermark="Search" Text="{Binding ToSendValue}"></TextBox>
+      <Border Grid.Row="1" Grid.Column="2" Grid.RowSpan="5" BorderBrush="Black" BorderThickness="0.5">
         <TreeView>
         </TreeView>
       </Border>
@@ -51,7 +52,7 @@
     </Grid>
     <Grid Margin="4.5,0,4,5" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" DockPanel.Dock="Bottom">
       <Button  VerticalAlignment="Stretch" Command="{Binding SendCommand}" Width="100" Grid.Row="0" Grid.Column="1"  Foreground="White" Background="MediumSlateBlue" Content="Send"/>
-      <TextBox Grid.Row="0" Grid.Column="0" Watermark="Command to be send" Text="{Binding ToSendValue}"></TextBox>
+      <TextBox Grid.Row="0" Grid.Column="0" Watermark="Command to be sent" Text="{Binding ToSendValue}"></TextBox>
     </Grid>
     
     <Border Margin="4.5,2,5,2" BorderBrush="Black" BorderThickness="0.5">
