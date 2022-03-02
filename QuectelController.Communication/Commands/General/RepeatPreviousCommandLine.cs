@@ -4,7 +4,7 @@ using System.Text;
 
 namespace QuectelController.Communication.Commands.General
 {
-    public class DisplayCurrentConfiguration : CommandBase
+    public class RepeatPreviousCommandLine : CommandBase
     {
         public override bool CanExecute => true;
 
@@ -14,14 +14,14 @@ namespace QuectelController.Communication.Commands.General
 
         public override bool CanWrite => false;
 
-        public override string Name => "Display Current Configuration";
+        public override string Name => "Repeat Previous Command Line";
 
-        public override string Description =>  "This command displays the current configurations of some AT command parameters, even including the single-letter AT command parameters which are not readable.";
+        public override string Description => "This command repeats previous AT command line, and / acts as the line termination character. ";
 
         public override CommandCategory Category => CommandCategory.GeneralCommands;
 
         public override IReadOnlyList<ICommandParameter> AvailableParameters => Array.Empty<ICommandParameter>();
 
-        protected override string RawCommand => "AT&V";
+        protected override string RawCommand => "A/";
     }
 }

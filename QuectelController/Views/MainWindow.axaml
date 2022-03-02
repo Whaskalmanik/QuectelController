@@ -1,6 +1,8 @@
 <Window xmlns ="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:QuectelController.ViewModels"
+        xmlns:models="clr-namespace:QuectelController;assembly=QuectelController"
+        xmlns:lib="clr-namespace:QuectelController.Communication;assembly=QuectelController.Communication"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -25,7 +27,7 @@
         </MenuItem>
       </Menu>
     </Border>
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Margin="4">
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,Auto,*,Auto" RowDefinitions="33,33,33,33,33,33" Margin="4">
       <Label Margin="0,1,5,0" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Serial Port</Label>
       <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="0" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding SerialPort}" Items="{Binding SerialPorts}"></ComboBox>
       <Label Margin="0,1,5,0" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Baudrate</Label>
@@ -40,8 +42,27 @@
       <Button Command="{Binding ConnectCommand}" Margin="0,1,5,0"  HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="1" Foreground="White" Background="Green" Content="Connect"/>
       <TextBox Grid.Row="0" Grid.Column="2" Watermark="Search" Text="{Binding ToSendValue}"></TextBox>
       <Border Grid.Row="1" Grid.Column="2" Grid.RowSpan="5" BorderBrush="Black" BorderThickness="0.5">
-        <TreeView>
-        </TreeView>
+        <ScrollViewer>
+          <TreeView Items="{Binding Categories}">
+            <TreeView.DataTemplates>
+              <TreeDataTemplate  DataType="models:TreeViewCategory" ItemsSource="{Binding Items}">
+                <TextBlock Foreground="MediumSlateBlue" Text="{Binding Name}" />
+              </TreeDataTemplate>
+              <DataTemplate DataType="models:TreeViewItem">
+                <TextBlock Text="{Binding Command.Name}" ToolTip.Tip="{Binding Command.Description}">
+                  <TextBlock.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="Execute" IsVisible="{Binding Command.CanExecute}" Command="{Binding $parent[Window].DataContext.ExecuteCommand}" CommandParameter="{Binding Command}"/>
+                      <MenuItem Header="Test" IsVisible="{Binding Command.CanTest}" Command="{Binding $parent[Window].DataContext.TestCommand}" CommandParameter="{Binding Command}"/>
+                      <MenuItem Header="Read" IsVisible="{Binding Command.CanRead}" Command="{Binding $parent[Window].DataContext.ReadCommand}" CommandParameter="{Binding Command}"/>
+                      <MenuItem Header="Write" IsVisible="{Binding Command.CanWrite}" Command="{Binding $parent[Window].DataContext.WriteCommand}" CommandParameter="{Binding Command}"/>
+                    </ContextMenu>
+                  </TextBlock.ContextMenu>
+                </TextBlock>
+              </DataTemplate>
+            </TreeView.DataTemplates>
+          </TreeView>
+        </ScrollViewer>
       </Border>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="0" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="SIM Card Info"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Service Cell"/>

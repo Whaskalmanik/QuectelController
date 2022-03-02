@@ -8,27 +8,27 @@ namespace QuectelController.Communication
     public enum CommandCategory
     {
         [Description("General Commands")]
-        GeneralCommands,
+        GeneralCommands = 0,
         [Description("Status Control Commands")]
-        StatusControlCommands,
+        StatusControlCommands = 1,
         [Description("(U)SIM Related Commands")]
-        USIMRelatedCommands,
+        USIMRelatedCommands = 2,
         [Description("Network Service Commands")]
-        NetworkServiceCommands,
+        NetworkServiceCommands = 3,
         [Description("Call Related Commands")]
-        CallRelatedCommands,
+        CallRelatedCommands = 4,
         [Description("Phonebook")]
-        Phonebook,
+        Phonebook = 5,
         [Description("Short Message Service Commands")]
-        ShortMessageServiceCommands,
+        ShortMessageServiceCommands = 6,
         [Description("Packet Domain Commands")]
-        PacketDomainCommands,
+        PacketDomainCommands = 7,
         [Description("Supplementary Service Commands")]
-        SupplementaryServiceCommands,
+        SupplementaryServiceCommands = 8,
         [Description("Audio Commands")]
-        AudioCommands,
+        AudioCommands = 9,
         [Description("Hardware Related Commands")]
-        HardwareRelatedCommands,
+        HardwareRelatedCommands = 10,
         
 
     }

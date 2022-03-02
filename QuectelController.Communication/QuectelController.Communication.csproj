@@ -21,8 +21,6 @@
     <Folder Include="Commands\Supplementary Service\" />
     <Folder Include="Commands\Packet Domain\" />
     <Folder Include="Commands\Short Message Service\" />
-    <Folder Include="Commands\SIM\" />
-    <Folder Include="Commands\Status\" />
   </ItemGroup>
 
 </Project>

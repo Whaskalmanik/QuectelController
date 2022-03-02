@@ -77,7 +77,7 @@ namespace QuectelController.Communication
 
         protected string CreateParametersString(IEnumerable<ICommandParameter> commandParameters)
         {
-            // z parametrů dělat raw command to sent
+            // z parametrů dělat raw command to sent "[]
             throw new NotImplementedException();
         }
     }
