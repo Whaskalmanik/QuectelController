@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 
 namespace QuectelController.Communication
@@ -17,6 +18,7 @@ namespace QuectelController.Communication
         public int DataBits { get; set; }
         public Parity Parity { get; set; }
         public StopBits StopBits { get; set; }
+        public IObservable<string> ReceivedCharactersObservable { get; private set; }
 
         public SerialCommunication(string _interface, int _baudrate,int _dataBits, Parity _parity, StopBits _stopBits)
         {
@@ -28,15 +30,12 @@ namespace QuectelController.Communication
                    
             Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);                  
         }
-        private void OnPortChange()
-        {
-            Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);
-        }
 
         public static List<string> GetSerialPorts()
         {
             return SerialPortStream.GetPortNames().ToList();
         }
+
         public void Open()
         {
             if(Stream.IsOpen)
@@ -44,6 +43,12 @@ namespace QuectelController.Communication
                 return;
             }
             Stream.Open();
+            ReceivedCharactersObservable = Observable.FromEvent<EventHandler<SerialDataReceivedEventArgs>, SerialDataReceivedEventArgs>(
+                x => (obj, args) => x(args),
+                x => Stream.DataReceived += x,
+                x => Stream.DataReceived -= x)
+                .Where(x => x.EventType == SerialData.Chars)
+                .Select(x => Stream.ReadExisting());
         }
 
         private void Close()
@@ -52,6 +57,7 @@ namespace QuectelController.Communication
             {
                 return;
             }
+            ReceivedCharactersObservable = Observable.Empty<string>();
             Stream.Close();
         }
 
@@ -68,6 +74,7 @@ namespace QuectelController.Communication
             return reader.ReadLine();
         }
 
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -82,7 +89,6 @@ namespace QuectelController.Communication
 
         public void Dispose()
         {
-            // Neměňte tento kód. Kód pro vyčištění vložte do metody Dispose(bool disposing).
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }

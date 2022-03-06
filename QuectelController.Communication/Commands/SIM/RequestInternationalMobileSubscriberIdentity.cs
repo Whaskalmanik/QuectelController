@@ -16,10 +16,7 @@ namespace QuectelController.Communication.Commands.SIM
 
         public override string Name => "Request International Mobile Subscriber Identity";
 
-        public override string Description => 
-            @"This command requests the International Mobile Subscriber Identity (IMSI) which is intended to permit the 
-TE to identify the individual(U)SIM card or active application in the UICC(GSM or (U) SIM) that is
-attached to MT.";
+        public override string Description => "This command requests the International Mobile Subscriber Identity (IMSI) which is intended to permit the TE to identify the individual (U)SIM card or active application in the UICC(GSM or (U) SIM) that is attached to MT.";
 
         public override CommandCategory Category => CommandCategory.USIMRelatedCommands;
 

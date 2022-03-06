@@ -18,10 +18,6 @@ namespace QuectelController.Views
 #endif
         }
 
-        public void button_Click(object sender, RoutedEventArgs e)
-        {
-            // Change button text when button is clicked.
-        }
 
 
         private void InitializeComponent()

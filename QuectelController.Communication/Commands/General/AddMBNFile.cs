@@ -34,4 +34,4 @@ namespace QuectelController.Communication.Commands.General
         }
     }
 }
-}
+

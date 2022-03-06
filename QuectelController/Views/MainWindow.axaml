@@ -20,10 +20,21 @@
         <MenuItem Header="File">
           <MenuItem Header="_Exit"/>
         </MenuItem>
-        <MenuItem Header="Modul">
-          <MenuItem Header="_Info"/>
-          <MenuItem Header="_Sim Card"/>
+        <MenuItem Header="Module">
+          <MenuItem Header="_Module info"/>
+          <MenuItem Header="_Manufacturer Identification"/>
+          <MenuItem Header="_Model Identification"/>
+          <MenuItem Header="_Firmware Revision Identification"/>
+          <MenuItem Header="_Mobile Equipment Identity (IMEI)"/>
+          <Separator/>
           <MenuItem Header="_Restart"/>
+          <MenuItem Header="_Turn off"/>
+        </MenuItem>
+        <MenuItem Header="Log files">
+          <MenuItem Header="_Save command history"/>
+          <MenuItem Header="_Open command history"/>
+          <Separator/>
+          <MenuItem Header="_Save Log file"/>
         </MenuItem>
       </Menu>
     </Border>
@@ -40,22 +51,24 @@
       <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="4" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding Parity}" Items="{Binding Parities}"></ComboBox>
       <Button Command="{Binding DisconnectCommand}" Margin="0,1,0,0" HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="0"  Foreground="White" Background="Red" Content="Disconnect"/>
       <Button Command="{Binding ConnectCommand}" Margin="0,1,5,0"  HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="1" Foreground="White" Background="Green" Content="Connect"/>
-      <TextBox Grid.Row="0" Grid.Column="2" Watermark="Search" Text="{Binding ToSendValue}"></TextBox>
+      <TextBox Grid.Row="0" Grid.Column="2" Watermark="Search" Text="{Binding ToSearchValue.Value}"  ></TextBox>
       <Border Grid.Row="1" Grid.Column="2" Grid.RowSpan="5" BorderBrush="Black" BorderThickness="0.5">
         <ScrollViewer>
-          <TreeView Items="{Binding Categories}">
+          <TreeView Items="{Binding FilteredCategories}">
             <TreeView.DataTemplates>
               <TreeDataTemplate  DataType="models:TreeViewCategory" ItemsSource="{Binding Items}">
                 <TextBlock Foreground="MediumSlateBlue" Text="{Binding Name}" />
               </TreeDataTemplate>
               <DataTemplate DataType="models:TreeViewItem">
-                <TextBlock Text="{Binding Command.Name}" ToolTip.Tip="{Binding Command.Description}">
+                <TextBlock Name="SearchTB" Text="{Binding Command.Name}" ToolTip.Tip="{Binding Command.Description}" >
                   <TextBlock.ContextMenu>
                     <ContextMenu>
                       <MenuItem Header="Execute" IsVisible="{Binding Command.CanExecute}" Command="{Binding $parent[Window].DataContext.ExecuteCommand}" CommandParameter="{Binding Command}"/>
                       <MenuItem Header="Test" IsVisible="{Binding Command.CanTest}" Command="{Binding $parent[Window].DataContext.TestCommand}" CommandParameter="{Binding Command}"/>
                       <MenuItem Header="Read" IsVisible="{Binding Command.CanRead}" Command="{Binding $parent[Window].DataContext.ReadCommand}" CommandParameter="{Binding Command}"/>
                       <MenuItem Header="Write" IsVisible="{Binding Command.CanWrite}" Command="{Binding $parent[Window].DataContext.WriteCommand}" CommandParameter="{Binding Command}"/>
+                      <Separator/>
+                      <MenuItem Header="Information" Command="{Binding $parent[Window].DataContext.ShowInfoAboutCommand}" CommandParameter="{Binding Command}"/>
                     </ContextMenu>
                   </TextBlock.ContextMenu>
                 </TextBlock>
@@ -77,7 +90,9 @@
     </Grid>
     
     <Border Margin="4.5,2,5,2" BorderBrush="Black" BorderThickness="0.5">
-      <TextBlock Padding ="5" FontSize="12" Foreground="Black">test</TextBlock>
+      <ScrollViewer>
+        <TextBlock Padding ="5" FontSize="12" Foreground="Black" Text="{Binding TerminalString}"></TextBlock>
+      </ScrollViewer>
     </Border>
   </DockPanel>
 </Window>

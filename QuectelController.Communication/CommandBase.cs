@@ -11,7 +11,6 @@ namespace QuectelController.Communication
         public abstract bool CanTest { get; }
         public abstract bool CanRead { get; }
         public abstract bool CanWrite { get; }
-
         public abstract string Name { get; }
         public abstract string Description { get; }
         public abstract CommandCategory Category { get; }
@@ -70,14 +69,15 @@ namespace QuectelController.Communication
 
         protected bool CheckParameters(IEnumerable<ICommandParameter> commandParameters)
         {
-            //check jestli jsou všechny neoptional zahrnuty
-            //check jestli je optional tak všechny před ním optional musí být
             throw new NotImplementedException();
         }
 
         protected string CreateParametersString(IEnumerable<ICommandParameter> commandParameters)
         {
-            // z parametrů dělat raw command to sent "[]
+            if(!CheckParameters(commandParameters))
+            {
+                return "Chyba parametrů";
+            }
             throw new NotImplementedException();
         }
     }

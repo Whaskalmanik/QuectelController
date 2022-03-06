@@ -11,15 +11,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="SerialPortStream" Version="2.4.0" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Commands\Network\" />
     <Folder Include="Commands\Call\" />
-    <Folder Include="Commands\Audio\" />
-    <Folder Include="Commands\Hardware\" />
-    <Folder Include="Commands\Supplementary Service\" />
-    <Folder Include="Commands\Packet Domain\" />
     <Folder Include="Commands\Short Message Service\" />
   </ItemGroup>
 
