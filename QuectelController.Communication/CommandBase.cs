@@ -69,14 +69,14 @@ namespace QuectelController.Communication
 
         protected bool CheckParameters(IEnumerable<ICommandParameter> commandParameters)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(); //TODO
         }
 
         protected string CreateParametersString(IEnumerable<ICommandParameter> commandParameters)
         {
             if(!CheckParameters(commandParameters))
             {
-                return "Chyba parametrů";
+                return "Invalid parameters";
             }
             throw new NotImplementedException();
         }

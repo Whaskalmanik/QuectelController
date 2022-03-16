@@ -16,8 +16,6 @@
 
   <ItemGroup>
     <Folder Include="Commands\Network\" />
-    <Folder Include="Commands\Call\" />
-    <Folder Include="Commands\Short Message Service\" />
   </ItemGroup>
 
 </Project>

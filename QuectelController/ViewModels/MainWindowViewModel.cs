@@ -17,6 +17,7 @@ using MessageBox.Avalonia.Models;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using MessageBox.Avalonia.Enums;
+using QuectelController.Views;
 
 namespace QuectelController.ViewModels
 {
@@ -122,6 +123,7 @@ namespace QuectelController.ViewModels
             serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
             TerminalStringBuilder.Clear();
             TerminalString = string.Empty;
+            serialCommunication.Open();
             SerialCharactersSubscriptions = serialCommunication.ReceivedCharactersObservable
                 .Subscribe(OnStringReceived);
         }
@@ -151,8 +153,15 @@ namespace QuectelController.ViewModels
             ToSendValue = command.CreateExecuteCommand();
         }
         private void Write(IATCommand command)
-        {
-
+        {   
+            if (!command.AvailableParameters.Any())
+            {
+                ToSendValue = command.CreateWriteCommand(Array.Empty<ICommandParameter>());
+                return;
+            }
+            var window = new WriteWindow(command);
+            window.Title = command.Name;
+            window.Show();
         }
         private void Read(IATCommand command)
         {
