@@ -51,7 +51,7 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Task> ExportLogCommand { get; }
         public ReactiveCommand<Unit, Task> ExportHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ImportHistoryCommand { get; }
-
+        public ReactiveCommand<Unit, Unit> ShowHistoryCommand { get; }
 
         //Zvolené
         public string SerialPort { get; set; }
@@ -86,6 +86,8 @@ namespace QuectelController.ViewModels
             ExportHistoryCommand = ReactiveCommand.Create<Task>(ExportCommands);
             ExportLogCommand = ReactiveCommand.Create<Task>(ExportLog);
             ImportHistoryCommand = ReactiveCommand.Create<Task>(ImportLog);
+            ShowHistoryCommand = ReactiveCommand.Create(ShowHistoryWindow);
+            CommandsHistory = new List<string>();
             CommandsList = FillList();
             Categories = GetCategories();
             FilteredCategories = new ObservableCollection<TreeViewCategory>(Categories);
@@ -133,8 +135,6 @@ namespace QuectelController.ViewModels
             filter.Name = "Log file";
             Filters.Add(filter);
             SaveFileBox.Filters = Filters;
-
-            CommandsHistory = new List<string>();
 
             SaveFileBox.DefaultExtension = "log";
 
@@ -224,6 +224,14 @@ namespace QuectelController.ViewModels
                 CommandsHistory = new List<string>(logFile);
             }
         }
+
+        private void ShowHistoryWindow()
+        {
+            var window = new HistoryWindow(CommandsHistory);
+            window.Show();
+            
+        }
+
 
         private void OnStringReceived(string output)
         {

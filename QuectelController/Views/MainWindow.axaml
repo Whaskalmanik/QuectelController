@@ -75,7 +75,7 @@
           </TreeView>
         </ScrollViewer>
       </Border>
-      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="0" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="SIM Card Info"/>
+      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="0" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Command History" Command="{Binding ShowHistoryCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Service Cell"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="2" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="IP Adress"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="3" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Network Info"/>
