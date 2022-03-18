@@ -18,15 +18,20 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using MessageBox.Avalonia.Enums;
 using QuectelController.Views;
+using System.Threading.Tasks;
+using Avalonia.Controls.ApplicationLifetimes;
+using System.IO;
+using Avalonia;
+using Avalonia.Platform;
 
 namespace QuectelController.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     {
         SerialCommunication serialCommunication;
+
         public List<IATCommand> CommandsList { get; }
-        public string Greeting => "Welcome to Avalonia!";
-        public string Button => "Muj butttonek";
+        public List<string> CommandsHistory { get; set; }
 
         //Listy
         public List<string> SerialPorts => SerialCommunication.GetSerialPorts();
@@ -43,7 +48,10 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<IATCommand, Unit> ReadCommand { get; }
         public ReactiveCommand<IATCommand, Unit> WriteCommand { get; }
         public ReactiveCommand<IATCommand, Unit> TestCommand { get; }
-        public ReactiveCommand<IATCommand, Unit> ShowInfoAboutCommand { get; }
+        public ReactiveCommand<Unit, Task> ExportLogCommand { get; }
+        public ReactiveCommand<Unit, Task> ExportHistoryCommand { get; }
+        public ReactiveCommand<Unit, Task> ImportHistoryCommand { get; }
+
 
         //Zvolené
         public string SerialPort { get; set; }
@@ -54,8 +62,11 @@ namespace QuectelController.ViewModels
         public string ToSendValue { get; set; }
         public string TerminalString { get; set; }
         private StringBuilder TerminalStringBuilder { get; set; } = new StringBuilder();
-
         private IDisposable SerialCharactersSubscriptions { get; set; }
+
+        private bool CanSend { get; set; } = false;
+        private string StatusBarColor { get; set; } = "Red";
+        private string StatusBar { get; set; } = "Disconnected";
 
         [DoNotNotify]
         public Reactive.Bindings.ReactiveProperty<string> ToSearchValue { get; set; } = new Reactive.Bindings.ReactiveProperty<string>();
@@ -72,7 +83,9 @@ namespace QuectelController.ViewModels
             WriteCommand = ReactiveCommand.Create<IATCommand>(Write);
             ReadCommand = ReactiveCommand.Create<IATCommand>(Read);
             TestCommand = ReactiveCommand.Create<IATCommand>(Test);
-            ShowInfoAboutCommand = ReactiveCommand.Create<IATCommand>(ShowInfo);
+            ExportHistoryCommand = ReactiveCommand.Create<Task>(ExportCommands);
+            ExportLogCommand = ReactiveCommand.Create<Task>(ExportLog);
+            ImportHistoryCommand = ReactiveCommand.Create<Task>(ImportLog);
             CommandsList = FillList();
             Categories = GetCategories();
             FilteredCategories = new ObservableCollection<TreeViewCategory>(Categories);
@@ -108,6 +121,110 @@ namespace QuectelController.ViewModels
                 );
         }
 
+        private async Task ExportCommands()
+        {
+            SaveFileDialog SaveFileBox = new SaveFileDialog();
+            SaveFileBox.Title = "Save Commands History As...";
+            List<FileDialogFilter> Filters = new List<FileDialogFilter>();
+            FileDialogFilter filter = new FileDialogFilter();
+            List<string> extension = new List<string>();
+            extension.Add("log");
+            filter.Extensions = extension;
+            filter.Name = "Log file";
+            Filters.Add(filter);
+            SaveFileBox.Filters = Filters;
+
+            CommandsHistory = new List<string>();
+
+            SaveFileBox.DefaultExtension = "log";
+
+            if (!CommandsHistory.Any())
+            {
+                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
+                    new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Error",
+                        ContentMessage = "Exported list is empty.",
+                        Icon = Icon.Error,
+                       // WindowIcon = new WindowIcon(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("Assets/avalonia-logo.ico"))),
+                    }); 
+
+                
+                await mb.Show();
+                return;
+            }
+
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var path = await SaveFileBox.ShowAsync(desktop.MainWindow);
+
+                using (TextWriter tw = new StreamWriter(path))
+                {
+                    foreach (string line in CommandsHistory)
+                        tw.WriteLine(line);
+                }
+            }
+
+        }
+        private async Task ExportLog()
+        {
+            SaveFileDialog SaveFileBox = new SaveFileDialog();
+            SaveFileBox.Title = "Save Log As...";
+            List<FileDialogFilter> Filters = new List<FileDialogFilter>();
+            FileDialogFilter filter = new FileDialogFilter();
+            List<string> extension = new List<string>();
+            extension.Add("log");
+            filter.Extensions = extension;
+            filter.Name = "Log file";
+            Filters.Add(filter);
+            SaveFileBox.Filters = Filters;
+
+            CommandsHistory = new List<string>();
+            
+            SaveFileBox.DefaultExtension = "log";
+
+            if (!CommandsHistory.Any())
+            {
+                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
+                    new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Error",
+                        ContentMessage = "Output is empty",
+                        Icon = Icon.Error,
+                        // WindowIcon = new WindowIcon(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("Assets/avalonia-logo.ico"))),
+                    });
+                await mb.Show();
+                return;
+            }
+
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var path = await SaveFileBox.ShowAsync(desktop.MainWindow);
+                await File.WriteAllTextAsync(path, TerminalString);
+            }
+        }
+
+        private async Task ImportLog()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Open log";
+            List<FileDialogFilter> Filters = new List<FileDialogFilter>();
+            FileDialogFilter filter = new FileDialogFilter();
+            List<string> extension = new List<string>();
+            extension.Add("log");
+            filter.Extensions = extension;
+            filter.Name = "Log file";
+            Filters.Add(filter);
+            openFileDialog.Filters = Filters;
+            openFileDialog.AllowMultiple = false;
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var path = await openFileDialog.ShowAsync(desktop.MainWindow);
+                var logFile = File.ReadAllLines(path.FirstOrDefault());
+                CommandsHistory = new List<string>(logFile);
+            }
+        }
+
         private void OnStringReceived(string output)
         {
             TerminalStringBuilder.Append(output);
@@ -120,6 +237,9 @@ namespace QuectelController.ViewModels
             {
                 return;
             }
+            StatusBar = "Connected";
+            StatusBarColor = "Green";
+            CanSend = false;
             serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
             TerminalStringBuilder.Clear();
             TerminalString = string.Empty;
@@ -133,6 +253,9 @@ namespace QuectelController.ViewModels
             {
                 return;
             }
+            StatusBar = "Disconnected";
+            StatusBarColor = "Red";
+            CanSend = false;
             SerialCharactersSubscriptions.Dispose();
             serialCommunication.Dispose();
             serialCommunication = null;
@@ -145,6 +268,7 @@ namespace QuectelController.ViewModels
             }
             serialCommunication.Write(ToSendValue);
             TerminalStringBuilder.AppendLine(ToSendValue);
+            CommandsHistory.Add(ToSendValue);
             TerminalString = TerminalStringBuilder.ToString();
         }
 
@@ -171,11 +295,6 @@ namespace QuectelController.ViewModels
         {
             ToSendValue = command.CreateTestCommand();
         }
-        private void ShowInfo(IATCommand command)
-        {
-
-        }
-
         private void Search(string input)
         {
             var filtered = Categories

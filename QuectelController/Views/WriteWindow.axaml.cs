@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using PropertyChanged;
 using QuectelController.Communication;
+using ReactiveUI;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +15,7 @@ namespace QuectelController.Views
     {
         private Grid gridLayout;
         private TextBlock describtion;
+
 
         public WriteWindow()
         {
@@ -62,6 +65,15 @@ namespace QuectelController.Views
             }
         }
 
+        private void SubmitButton(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        public void CloseButton(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);

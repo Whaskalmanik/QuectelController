@@ -9,7 +9,7 @@
         x:Class="QuectelController.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         MinHeight="700" MinWidth="750"
-        Title="QuectelController">
+        Title="Quectel Modem Controller">
 
   <Design.DataContext>
       <vm:MainWindowViewModel/>
@@ -18,10 +18,10 @@
     <Border Height="25" BorderBrush="Black" BorderThickness="0.5" DockPanel.Dock="Top">
       <Menu DockPanel.Dock="Top">
         <MenuItem Header="File">
-          <MenuItem Header="_Exit"/>
+          <MenuItem Header="_Exit" Click="CloseButton"/>
         </MenuItem>
         <MenuItem Header="Module">
-          <MenuItem Header="_Module info"/>
+          <MenuItem Header="_Module info" Click="SendModuleInfo"/>
           <MenuItem Header="_Manufacturer Identification"/>
           <MenuItem Header="_Model Identification"/>
           <MenuItem Header="_Firmware Revision Identification"/>
@@ -31,10 +31,10 @@
           <MenuItem Header="_Turn off"/>
         </MenuItem>
         <MenuItem Header="Log files">
-          <MenuItem Header="_Save command history"/>
-          <MenuItem Header="_Open command history"/>
+          <MenuItem Header="_Save command history" Command="{Binding ExportHistoryCommand}"/>
+          <MenuItem Header="_Open command history" Command="{Binding ImportHistoryCommand}"/>
           <Separator/>
-          <MenuItem Header="_Save Log file"/>
+          <MenuItem Header="_Save Log file" Command="{Binding ExportLogCommand} "/>
         </MenuItem>
       </Menu>
     </Border>
@@ -49,8 +49,8 @@
       <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="3" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding StopBits}" Items="{Binding StopBitsList}"></ComboBox>
       <Label Margin="0,1,5,0" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">Parity</Label>
       <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="4" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding Parity}" Items="{Binding Parities}"></ComboBox>
-      <Button Command="{Binding DisconnectCommand}" Margin="0,1,0,0" HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="0"  Foreground="White" Background="Red" Content="Disconnect"/>
-      <Button Command="{Binding ConnectCommand}" Margin="0,1,5,0"  HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="1" Foreground="White" Background="Green" Content="Connect"/>
+      <Button IsEnabled="{Binding CanSend}" Command="{Binding DisconnectCommand}" Margin="0,1,0,0" HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="0"  Foreground="White" Background="Red" Content="Disconnect"/>
+      <Button IsEnabled="{Binding !CanSend}" Command="{Binding ConnectCommand}" Margin="0,1,5,0"  HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="1" Foreground="White" Background="Green" Content="Connect"/>
       <TextBox Grid.Row="0" Grid.Column="2" Watermark="Search" Text="{Binding ToSearchValue.Value}"  ></TextBox>
       <Border Grid.Row="1" Grid.Column="2" Grid.RowSpan="5" BorderBrush="Black" BorderThickness="0.5">
         <ScrollViewer>
@@ -67,8 +67,6 @@
                       <MenuItem Header="Test" IsVisible="{Binding Command.CanTest}" Command="{Binding $parent[Window].DataContext.TestCommand}" CommandParameter="{Binding Command}"/>
                       <MenuItem Header="Read" IsVisible="{Binding Command.CanRead}" Command="{Binding $parent[Window].DataContext.ReadCommand}" CommandParameter="{Binding Command}"/>
                       <MenuItem Header="Write" IsVisible="{Binding Command.CanWrite}" Command="{Binding $parent[Window].DataContext.WriteCommand}" CommandParameter="{Binding Command}"/>
-                      <Separator/>
-                      <MenuItem Header="Information" Command="{Binding $parent[Window].DataContext.ShowInfoAboutCommand}" CommandParameter="{Binding Command}"/>
                     </ContextMenu>
                   </TextBlock.ContextMenu>
                 </TextBlock>
@@ -84,11 +82,15 @@
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="4" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Restart Modem"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="5" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Connect"/>
     </Grid>
-    <Grid Margin="4.5,0,4,5" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" DockPanel.Dock="Bottom">
-      <Button  VerticalAlignment="Stretch" Command="{Binding SendCommand}" Width="100" Grid.Row="0" Grid.Column="1"  Foreground="White" Background="MediumSlateBlue" Content="Send"/>
+    <Border DockPanel.Dock="Bottom" BorderThickness="0.5" BorderBrush="Black">
+      <Grid Margin="4.5,0,4,3"  RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+        <Label Name="StatusBar" FontSize="10" Foreground="{Binding StatusBarColor}" Grid.Row="2" Grid.Column="2" Content="{Binding StatusBar}" HorizontalContentAlignment="Center"/>
+      </Grid>
+    </Border>
+    <Grid Margin="4.5,0,4,1" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" DockPanel.Dock="Bottom">
+      <Button  VerticalAlignment="Stretch" IsEnabled="{Binding CanSend}" Command="{Binding SendCommand}" Width="100" Grid.Row="0" Grid.Column="1"  Foreground="White" Background="MediumSlateBlue" Content="Send"/>
       <TextBox Grid.Row="0" Grid.Column="0" Watermark="Command to be sent" Text="{Binding ToSendValue}"></TextBox>
     </Grid>
-    
     <Border Margin="4.5,2,5,2" BorderBrush="Black" BorderThickness="0.5">
       <ScrollViewer>
         <TextBlock Padding ="5" FontSize="12" Foreground="Black" Text="{Binding TerminalString}"></TextBlock>
