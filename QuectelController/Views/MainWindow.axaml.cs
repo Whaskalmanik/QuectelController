@@ -27,9 +27,6 @@ namespace QuectelController.Views
         {
             this.Close();
         }
-        private void SendModuleInfo(object sender, RoutedEventArgs e)
-        {
-            
-        }
+
     }
 }

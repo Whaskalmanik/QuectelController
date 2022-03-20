@@ -4,18 +4,32 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using PropertyChanged;
 using QuectelController.Communication;
+using QuectelController.ParameterEditors;
 using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace QuectelController.Views
 {
     [DoNotNotify]
     public partial class WriteWindow : Window
     {
+        public List<object> SelectedValues { get; private set; }
+
         private Grid gridLayout;
         private TextBlock describtion;
+        private List<Control> parameterEditorControls = new List<Control>();
+        private readonly IATCommand command;
 
+        private Dictionary<Type, IParameterEditor> Editors { get; } = Assembly.GetExecutingAssembly().GetTypes()
+            .Where(x => !x.IsAbstract && typeof(IParameterEditor).IsAssignableFrom(x))
+            .Select(x => new { type = x, @interface = x.GetInterfaces().FirstOrDefault(y => y.IsGenericType && y.GetGenericTypeDefinition() == typeof(IParameterEditor<>)) })
+            .Where(x => x.@interface != null)
+            .ToDictionary(
+                x => x.@interface.GetGenericArguments()[0],
+                x => Activator.CreateInstance(x.type) as IParameterEditor);
 
         public WriteWindow()
         {
@@ -29,7 +43,8 @@ namespace QuectelController.Views
         {
             gridLayout = this.FindControl<Grid>("GridLayout");
             describtion = this.FindControl<TextBlock>("TextBoxDescribtion");
-            Populate(command); 
+            Populate(command);
+            this.command = command;
         }
 
         private void Populate(IATCommand command)
@@ -48,31 +63,46 @@ namespace QuectelController.Views
                 label.Margin = Thickness.Parse("0, 1, 5, 0");
                 label.SetValue(ToolTip.TipProperty, parameter.Description);
 
-               /* 
-                ComboBox comboBox = new ComboBox();
-                comboBox.Margin = Thickness.Parse("0, 1, 5, 0");
-                comboBox.SetValue(Grid.ColumnProperty, 0);
-                comboBox.SetValue(Grid.RowProperty, index);
-                */
-
-
-                TextBox textBox = new TextBox();
-                gridLayout.Children.Add(textBox);
-                textBox.SetValue(Grid.ColumnProperty, 1);
-                textBox.SetValue(Grid.RowProperty, index);
-                textBox.Margin = Thickness.Parse("0, 1, 5, 0");
-
+                var editor = GetParameterEditor(parameter);
+                var control = editor.CreateControl(parameter);
+                gridLayout.Children.Add(control);
+                control.SetValue(Grid.ColumnProperty, 1);
+                control.SetValue(Grid.RowProperty, index);
+                control.Margin = Thickness.Parse("0, 1, 5, 0");
+                parameterEditorControls.Add(control);
             }
+        }
+
+        private IParameterEditor GetParameterEditor(ICommandParameter parameter)
+        {
+            if(Editors.TryGetValue(parameter.GetType(), out var editor))
+            {
+                return editor;
+            }
+            throw new ArgumentException();
         }
 
         private void SubmitButton(object sender, RoutedEventArgs e)
         {
-
+            SelectedValues = GetValues();
+            Close();
         }
 
+
+        private List<object> GetValues()
+        {
+            List<object> values = new List<object>();
+            foreach((var parameter, var control) in command.AvailableParameters.Zip(parameterEditorControls))
+            {
+                var editor = GetParameterEditor(parameter);
+                values.Add(editor.GetValue(control));
+            }
+            return values;
+        }
+            
         public void CloseButton(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
         private void InitializeComponent()
         {

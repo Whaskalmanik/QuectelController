@@ -21,14 +21,14 @@
           <MenuItem Header="_Exit" Click="CloseButton"/>
         </MenuItem>
         <MenuItem Header="Module">
-          <MenuItem Header="_Module info" Click="SendModuleInfo"/>
-          <MenuItem Header="_Manufacturer Identification"/>
-          <MenuItem Header="_Model Identification"/>
-          <MenuItem Header="_Firmware Revision Identification"/>
-          <MenuItem Header="_Mobile Equipment Identity (IMEI)"/>
+          <MenuItem IsEnabled="{Binding CanSend}" Header="_Module info"/>
+          <MenuItem IsEnabled="{Binding CanSend}" Header="_Manufacturer Identification"/>
+          <MenuItem IsEnabled="{Binding CanSend}" Header="_Model Identification"/>
+          <MenuItem IsEnabled="{Binding CanSend}" Header="_Firmware Revision Identification"/>
+          <MenuItem IsEnabled="{Binding CanSend}" Header="_Mobile Equipment Identity (IMEI)"/>
           <Separator/>
-          <MenuItem Header="_Restart"/>
-          <MenuItem Header="_Turn off"/>
+          <MenuItem IsEnabled="{Binding CanSend}" Header="_Restart"/>
+          <MenuItem IsEnabled="{Binding CanSend}" Header="_Turn off"/>
         </MenuItem>
         <MenuItem Header="Log files">
           <MenuItem Header="_Save command history" Command="{Binding ExportHistoryCommand}"/>
@@ -76,7 +76,7 @@
         </ScrollViewer>
       </Border>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="0" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Command History" Command="{Binding ShowHistoryCommand}"/>
-      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Service Cell"/>
+      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Execute History" Command="{Binding ExecuteHistoryCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="2" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="IP Adress"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="3" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Network Info"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="4" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Restart Modem"/>
@@ -84,6 +84,7 @@
     </Grid>
     <Border DockPanel.Dock="Bottom" BorderThickness="0.5" BorderBrush="Black">
       <Grid Margin="4.5,0,4,3"  RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+        <ProgressBar Name="Progressbar" IsEnabled="{Binding isProgressBarVissible}" Value="{Binding ProgressValue}" Height="10"  Grid.Row="2" Grid.Column="0" />
         <Label Name="StatusBar" FontSize="10" Foreground="{Binding StatusBarColor}" Grid.Row="2" Grid.Column="2" Content="{Binding StatusBar}" HorizontalContentAlignment="Center"/>
       </Grid>
     </Border>

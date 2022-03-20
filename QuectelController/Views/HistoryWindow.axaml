@@ -10,11 +10,11 @@
 
 
   <DockPanel LastChildFill="True">
-    <Grid Margin="4.5,0,4,5" DockPanel.Dock="Bottom" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto">
-      <Button Grid.Row="3" Background="Green" Foreground="White" Grid.Column="2" Content="Submit" Width="80" HorizontalContentAlignment="Center"/>
-      <Button Grid.Row="3" Background="Red" Foreground="White" Grid.Column="1" Content="Close" Width="80" HorizontalContentAlignment="Center"/>
+    <Grid Margin="4.5,0,4,5" DockPanel.Dock="Bottom" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto,Auto">
+      <Button Grid.Row="3" Click="Parse" Background="Green" Foreground="White" Grid.Column="3" Content="Parse" Width="80" HorizontalContentAlignment="Center"/>
+      <Button Grid.Row="3" Click="Close" Background="Red" Foreground="White" Grid.Column="1" Content="Close" Width="80" HorizontalContentAlignment="Center"/>
     </Grid>
-    <ScrollViewer Margin="4.5,0,4,5">
+    <ScrollViewer Margin="4.5,0,4,5"> 
       <ListBox Name="HistoryLB" />
     </ScrollViewer>
   </DockPanel>

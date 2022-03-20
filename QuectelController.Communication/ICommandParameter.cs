@@ -4,7 +4,7 @@ using System.Text;
 
 namespace QuectelController.Communication
 {
-    public interface ICommandParameter
+    public interface ICommandParameter : ICloneable
     {
         string Name { get; }
         string Description { get; }

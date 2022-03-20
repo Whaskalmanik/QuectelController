@@ -28,5 +28,10 @@ namespace QuectelController.Communication.CommandParameters
         {
             return $"\"{Value}\"";
         }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }

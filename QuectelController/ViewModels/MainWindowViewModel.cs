@@ -23,6 +23,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using System.IO;
 using Avalonia;
 using Avalonia.Platform;
+using System.Threading;
 
 namespace QuectelController.ViewModels
 {
@@ -46,12 +47,13 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Unit> SendCommand { get; }
         public ReactiveCommand<IATCommand, Unit> ExecuteCommand { get; }
         public ReactiveCommand<IATCommand, Unit> ReadCommand { get; }
-        public ReactiveCommand<IATCommand, Unit> WriteCommand { get; }
+        public ReactiveCommand<IATCommand, Task> WriteCommand { get; }
         public ReactiveCommand<IATCommand, Unit> TestCommand { get; }
         public ReactiveCommand<Unit, Task> ExportLogCommand { get; }
         public ReactiveCommand<Unit, Task> ExportHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ImportHistoryCommand { get; }
         public ReactiveCommand<Unit, Unit> ShowHistoryCommand { get; }
+        public ReactiveCommand<Unit, Task> ExecuteHistoryCommand { get; }
 
         //Zvolené
         public string SerialPort { get; set; }
@@ -65,8 +67,11 @@ namespace QuectelController.ViewModels
         private IDisposable SerialCharactersSubscriptions { get; set; }
 
         private bool CanSend { get; set; } = false;
+        public bool isProgressBarVissible { get; set; } = false;
         private string StatusBarColor { get; set; } = "Red";
         private string StatusBar { get; set; } = "Disconnected";
+
+        private double ProgressValue { get; set; } = 0;
 
         [DoNotNotify]
         public Reactive.Bindings.ReactiveProperty<string> ToSearchValue { get; set; } = new Reactive.Bindings.ReactiveProperty<string>();
@@ -80,13 +85,14 @@ namespace QuectelController.ViewModels
             DisconnectCommand = ReactiveCommand.Create(Disconnect);
             SendCommand = ReactiveCommand.Create(Send);
             ExecuteCommand = ReactiveCommand.Create<IATCommand>(Execute);
-            WriteCommand = ReactiveCommand.Create<IATCommand>(Write);
+            WriteCommand = ReactiveCommand.Create<IATCommand,Task>(Write);
             ReadCommand = ReactiveCommand.Create<IATCommand>(Read);
             TestCommand = ReactiveCommand.Create<IATCommand>(Test);
             ExportHistoryCommand = ReactiveCommand.Create<Task>(ExportCommands);
             ExportLogCommand = ReactiveCommand.Create<Task>(ExportLog);
             ImportHistoryCommand = ReactiveCommand.Create<Task>(ImportLog);
             ShowHistoryCommand = ReactiveCommand.Create(ShowHistoryWindow);
+            ExecuteHistoryCommand = ReactiveCommand.Create<Task>(ExecuteHistory);
             CommandsHistory = new List<string>();
             CommandsList = FillList();
             Categories = GetCategories();
@@ -178,26 +184,9 @@ namespace QuectelController.ViewModels
             filter.Name = "Log file";
             Filters.Add(filter);
             SaveFileBox.Filters = Filters;
-
-            CommandsHistory = new List<string>();
-            
             SaveFileBox.DefaultExtension = "log";
 
-            if (!CommandsHistory.Any())
-            {
-                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
-                    new MessageBoxStandardParams
-                    {
-                        ContentTitle = "Error",
-                        ContentMessage = "Output is empty",
-                        Icon = Icon.Error,
-                        // WindowIcon = new WindowIcon(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("Assets/avalonia-logo.ico"))),
-                    });
-                await mb.Show();
-                return;
-            }
-
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var path = await SaveFileBox.ShowAsync(desktop.MainWindow);
                 await File.WriteAllTextAsync(path, TerminalString);
@@ -217,7 +206,7 @@ namespace QuectelController.ViewModels
             Filters.Add(filter);
             openFileDialog.Filters = Filters;
             openFileDialog.AllowMultiple = false;
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var path = await openFileDialog.ShowAsync(desktop.MainWindow);
                 var logFile = File.ReadAllLines(path.FirstOrDefault());
@@ -230,6 +219,46 @@ namespace QuectelController.ViewModels
             var window = new HistoryWindow(CommandsHistory);
             window.Show();
             
+        }
+
+        private async Task ExecuteHistory()
+        {
+            List<string> temp = new List<string>(CommandsHistory);
+
+            if (CommandsHistory.Count == 0)
+            {
+                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
+                    new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Info",
+                        ContentMessage = "History is empty",
+                        Icon = Icon.Info,
+                    });
+                var s = mb.Show();
+                return;
+            }
+            if (!CommandsHistory.Any())
+            {
+                return;
+            }
+
+            StatusBar = "Executing";
+            StatusBarColor = "Orange";
+            isProgressBarVissible = true;
+            ProgressValue = 0;
+            int max = temp.Count();
+            double increment = 100 / max;
+            foreach (string command in temp)
+            {
+                ToSendValue = command;
+                ProgressValue += increment;
+                Send();
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+            isProgressBarVissible = false;
+            ProgressValue = 0;
+            StatusBar = "Connected";
+            StatusBarColor = "Green";
         }
 
 
@@ -247,7 +276,7 @@ namespace QuectelController.ViewModels
             }
             StatusBar = "Connected";
             StatusBarColor = "Green";
-            CanSend = false;
+            CanSend = true;
             serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
             TerminalStringBuilder.Clear();
             TerminalString = string.Empty;
@@ -269,8 +298,16 @@ namespace QuectelController.ViewModels
             serialCommunication = null;
         }
         private void Send()
-        {
+        {          
             if (serialCommunication == null)
+            {
+                return;
+            }
+            if(ToSendValue == null)
+            {
+                return;
+            }
+            if(!ToSendValue.Trim().Any())
             {
                 return;
             }
@@ -284,8 +321,9 @@ namespace QuectelController.ViewModels
         {
             ToSendValue = command.CreateExecuteCommand();
         }
-        private void Write(IATCommand command)
-        {   
+
+        private async Task Write(IATCommand command)
+        {
             if (!command.AvailableParameters.Any())
             {
                 ToSendValue = command.CreateWriteCommand(Array.Empty<ICommandParameter>());
@@ -293,7 +331,24 @@ namespace QuectelController.ViewModels
             }
             var window = new WriteWindow(command);
             window.Title = command.Name;
-            window.Show();
+
+
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                await window.ShowDialog(desktop.MainWindow);
+            }
+
+            if (window.SelectedValues == null) return;
+
+            var parameters = command.AvailableParameters.Select(x => x.Clone() as ICommandParameter).ToArray();
+
+            for(int i =0;i<parameters.Length;i++)
+            {
+                parameters[i].Value = window.SelectedValues[i];
+            }
+            
+            ToSendValue = command.CreateWriteCommand(parameters);
+
         }
         private void Read(IATCommand command)
         {

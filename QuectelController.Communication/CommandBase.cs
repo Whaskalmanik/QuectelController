@@ -69,7 +69,7 @@ namespace QuectelController.Communication
 
         protected bool CheckParameters(IEnumerable<ICommandParameter> commandParameters)
         {
-            throw new NotImplementedException(); //TODO
+            return true;
         }
 
         protected string CreateParametersString(IEnumerable<ICommandParameter> commandParameters)
@@ -78,7 +78,12 @@ namespace QuectelController.Communication
             {
                 return "Invalid parameters";
             }
-            throw new NotImplementedException();
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach(var command in commandParameters)
+            {
+                stringBuilder.Append(command.ToCommandString()).Append(",") ;
+            }
+            return stringBuilder.ToString();
         }
     }
 }
