@@ -380,7 +380,7 @@ namespace QuectelController.ViewModels
             }
 
             List<bool> conditions = new List<bool>();
-            foreach(var token in input.Split(" ").Select(x => x.Trim()))
+            foreach(var token in input.Split(" ").Select(x => x.Trim().ToLower()))
             {
                 if (token.ToLower().StartsWith("c:") && token.Length > 2)
                 {

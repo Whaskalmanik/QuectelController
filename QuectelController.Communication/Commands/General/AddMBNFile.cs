@@ -15,9 +15,9 @@ namespace QuectelController.Communication.Commands.General
 
         public override bool CanWrite => true;
 
-        public override string Name => "Delete MBN File";
+        public override string Name => "Add MBN File";
 
-        public override string Description => "This command deletes MBN file from EFS";
+        public override string Description => "This command adds MBN file to EFS";
 
         public override CommandCategory Category => CommandCategory.GeneralCommands;
 
@@ -30,7 +30,7 @@ namespace QuectelController.Communication.Commands.General
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"Add\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"Add\"," + CreateParametersString(commandParameters);
         }
     }
 }

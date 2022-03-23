@@ -38,7 +38,7 @@ namespace QuectelController.Communication.Commands.Audio
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"i2s/cfg\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"i2s/cfg\"," + CreateParametersString(commandParameters);
         }
     }
 }

@@ -54,7 +54,8 @@ namespace QuectelController.Communication
             {
                 return "Invalid parameters";
             }
-            return CreateCommandInternal(commandParameters);
+            StringBuilder sb = new StringBuilder(CreateCommandInternal(commandParameters));
+            return sb.ToString(0, sb.Length - 1);
         }
 
         public virtual string FormatOutput(string rawOutput)
@@ -83,6 +84,7 @@ namespace QuectelController.Communication
             {
                 stringBuilder.Append(command.ToCommandString()).Append(",") ;
             }
+            var lenght = stringBuilder.Length;
             return stringBuilder.ToString();
         }
     }
