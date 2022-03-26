@@ -33,7 +33,7 @@ namespace QuectelController.Communication.Commands.General
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"AutoSel\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"AutoSel\"," + CreateParametersString(commandParameters);
         }
     }
 }

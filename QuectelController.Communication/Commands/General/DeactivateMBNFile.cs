@@ -21,11 +21,12 @@ namespace QuectelController.Communication.Commands.General
         public override CommandCategory Category => CommandCategory.GeneralCommands;
 
         public override IReadOnlyList<ICommandParameter> AvailableParameters => Array.Empty<ICommandParameter>();
+       
         protected override string RawCommand => "AT+QMBNCFG";
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"Deactivate\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"Deactivate\"," + CreateParametersString(commandParameters);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace QuectelController.Communication.Commands.General
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"Delete\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"Delete\"," + CreateParametersString(commandParameters);
         }
     }
 }

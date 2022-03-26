@@ -32,7 +32,7 @@ namespace QuectelController.Communication.Commands.Audio
         protected override string RawCommand => "AT+QAUDCFG";
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"slic/LF_Ring\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"slic/LF_Ring\"," + CreateParametersString(commandParameters);
         }
     }
 }

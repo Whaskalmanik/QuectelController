@@ -41,7 +41,7 @@ namespace QuectelController.Communication.Commands.General
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"List\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"List\"," + CreateParametersString(commandParameters);
         }
     }
 }

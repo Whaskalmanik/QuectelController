@@ -33,7 +33,7 @@ namespace QuectelController.Communication.Commands.Status
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"pcie/mode\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"pcie/mode\"," + CreateParametersString(commandParameters);
         }
     }
 }

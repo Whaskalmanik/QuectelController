@@ -42,7 +42,7 @@ namespace QuectelController.Communication.Commands.Hardware
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"rgmii\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"rgmii\"," + CreateParametersString(commandParameters);
         }
     }
 }

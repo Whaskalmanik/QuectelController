@@ -31,7 +31,7 @@ selected MBN file will be activated.";
         protected override string RawCommand => "AT+QMBNCFG";
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"Select\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"Select\"," + CreateParametersString(commandParameters);
         }
     }
 }

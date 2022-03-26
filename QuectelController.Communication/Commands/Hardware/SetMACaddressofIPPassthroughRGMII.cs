@@ -29,7 +29,7 @@ namespace QuectelController.Communication.Commands.Hardware
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"ipptmac\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"ipptmac\"," + CreateParametersString(commandParameters);
         }
     }
 }

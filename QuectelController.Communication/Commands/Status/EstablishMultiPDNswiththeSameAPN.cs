@@ -23,7 +23,7 @@ namespace QuectelController.Communication.Commands.Status
 
         public override IReadOnlyList<ICommandParameter> AvailableParameters => new[]
         {
-            new IntegerListCommandParameter("enabled","Integer type.",new Dictionary<string, object> {
+            new IntegerListCommandParameter("enable","Integer type.",new Dictionary<string, object> {
                 { "Refuse to establish multi PDNs with the same APN profile",0 },
                 { "Allow to establish multi PDNs with the same APN profile",1 },
             },true),
@@ -33,7 +33,7 @@ namespace QuectelController.Communication.Commands.Status
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"pdp/duplicatechk\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"pdp/duplicatechk\"," + CreateParametersString(commandParameters);
         }
     }
 }

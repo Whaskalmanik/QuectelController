@@ -33,7 +33,7 @@ namespace QuectelController.Communication.Commands.Audio
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"slic/AudLoop\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"slic/AudLoop\"," + CreateParametersString(commandParameters);
         }
     }
 }

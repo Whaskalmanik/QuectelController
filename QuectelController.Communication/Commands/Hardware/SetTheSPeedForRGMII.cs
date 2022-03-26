@@ -35,7 +35,7 @@ namespace QuectelController.Communication.Commands.Hardware
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"speed\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"speed\"," + CreateParametersString(commandParameters);
         }
     }
 }

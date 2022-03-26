@@ -45,7 +45,7 @@ namespace QuectelController.Communication.Commands.SIM
                 { "Lock",1 },
                 { "Query status",2 },
             },false),
-           new StringCommandParameter("password","Password",true),
+           new StringCommandParameter("password","String type, Password",true),
            new IntegerListCommandParameter("class","Integer type",new Dictionary<string, object> {
                 { "Voice",1 },
                 { "Data",2 },

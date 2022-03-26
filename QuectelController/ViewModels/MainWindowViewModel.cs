@@ -52,7 +52,7 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Task> ExportLogCommand { get; }
         public ReactiveCommand<Unit, Task> ExportHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ImportHistoryCommand { get; }
-        public ReactiveCommand<Unit, Unit> ShowHistoryCommand { get; }
+        public ReactiveCommand<Unit, Task> ShowHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ExecuteHistoryCommand { get; }
 
         //Zvolené
@@ -91,7 +91,7 @@ namespace QuectelController.ViewModels
             ExportHistoryCommand = ReactiveCommand.Create<Task>(ExportCommands);
             ExportLogCommand = ReactiveCommand.Create<Task>(ExportLog);
             ImportHistoryCommand = ReactiveCommand.Create<Task>(ImportLog);
-            ShowHistoryCommand = ReactiveCommand.Create(ShowHistoryWindow);
+            ShowHistoryCommand = ReactiveCommand.Create<Task>(ShowHistoryWindow);
             ExecuteHistoryCommand = ReactiveCommand.Create<Task>(ExecuteHistory);
             CommandsHistory = new List<string>();
             CommandsList = FillList();
@@ -214,11 +214,18 @@ namespace QuectelController.ViewModels
             }
         }
 
-        private void ShowHistoryWindow()
+        private async Task ShowHistoryWindow()
         {
             var window = new HistoryWindow(CommandsHistory);
-            window.Show();
-            
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                await window.ShowDialog(desktop.MainWindow);
+            }
+
+            if (window.selectedValue == null) return;
+
+            ToSendValue = window.selectedValue;
+
         }
 
         private async Task ExecuteHistory()

@@ -38,7 +38,7 @@ namespace QuectelController.Communication.Commands.Hardware
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"routing\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"routing\"," + CreateParametersString(commandParameters);
         }
     }
 }

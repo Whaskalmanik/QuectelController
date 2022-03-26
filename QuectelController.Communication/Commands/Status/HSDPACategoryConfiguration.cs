@@ -38,7 +38,7 @@ namespace QuectelController.Communication.Commands.Status
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"hsdpacat\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"hsdpacat\"," + CreateParametersString(commandParameters);
         }
     }
 }

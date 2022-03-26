@@ -24,11 +24,11 @@ namespace QuectelController.Communication.Commands.Status
         {
             new IntegerListCommandParameter("rrcr","Integer type. RRC release version.",new Dictionary<string, object> {
                 { "R99",0 },
-                { "R5",1 },
-                { "R6",2 },
-                { "R7",3 },
-                { "R8",4 },
-                { "R9",5 },
+                { "R5", 1 },
+                { "R6", 2 },
+                { "R7", 3 },
+                { "R8", 4 },
+                { "R9", 5 },
             },true),
         };
 
@@ -36,7 +36,7 @@ namespace QuectelController.Communication.Commands.Status
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"rcr\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"rcr\"," + CreateParametersString(commandParameters);
         }
     }
 }

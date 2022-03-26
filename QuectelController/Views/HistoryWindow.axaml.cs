@@ -13,7 +13,7 @@ namespace QuectelController.Views
     public partial class HistoryWindow : Window
     {
         private ListBox listBox;
-
+        public string selectedValue = null;
 
         public HistoryWindow()
         {
@@ -36,7 +36,8 @@ namespace QuectelController.Views
 
         private void Parse(object sender, RoutedEventArgs e)
         {
-            var text = listBox.SelectedItem;
+            selectedValue = listBox.SelectedItem.ToString();
+            this.Close();
         }
 
         private void Close(object sender, RoutedEventArgs e)

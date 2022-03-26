@@ -22,6 +22,6 @@ namespace QuectelController.Communication.Commands.Hardware
 
         public override IReadOnlyList<ICommandParameter> AvailableParameters => Array.Empty<ICommandParameter>();
 
-        protected override string RawCommand => "AT+QETH=";
+        protected override string RawCommand => "AT+QETH";
     }
 }

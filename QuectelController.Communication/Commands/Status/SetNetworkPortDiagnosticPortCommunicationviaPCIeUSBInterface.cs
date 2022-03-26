@@ -36,7 +36,7 @@ namespace QuectelController.Communication.Commands.Status
 
         protected override string CreateCommandInternal(IEnumerable<ICommandParameter> commandParameters)
         {
-            return RawCommand + "=\"data_interface\"" + CreateParametersString(commandParameters);
+            return RawCommand + "=\"data_interface\"," + CreateParametersString(commandParameters);
         }
     }
 }
