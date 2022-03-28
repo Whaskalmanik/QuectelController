@@ -17,11 +17,13 @@ namespace QuectelController.Views
     public partial class WriteWindow : Window
     {
         public List<object> SelectedValues { get; private set; }
+        public bool? isIgnored = false;
 
         private Grid gridLayout;
         private TextBlock describtion;
         private List<Control> parameterEditorControls = new List<Control>();
         private readonly IATCommand command;
+        private CheckBox checkBox;
 
         private Dictionary<Type, IParameterEditor> Editors { get; } = Assembly.GetExecutingAssembly().GetTypes()
             .Where(x => !x.IsAbstract && typeof(IParameterEditor).IsAssignableFrom(x))
@@ -43,6 +45,7 @@ namespace QuectelController.Views
         {
             gridLayout = this.FindControl<Grid>("GridLayout");
             describtion = this.FindControl<TextBlock>("TextBoxDescribtion");
+            checkBox = this.FindControl<CheckBox>("CheckBox");
             Populate(command);
             this.command = command;
         }
@@ -85,9 +88,9 @@ namespace QuectelController.Views
         private void SubmitButton(object sender, RoutedEventArgs e)
         {
             SelectedValues = GetValues();
+            isIgnored = checkBox.IsChecked;
             Close();
         }
-
 
         private List<object> GetValues()
         {

@@ -27,7 +27,8 @@ namespace QuectelController.Communication
             DataBits = _dataBits;
             Parity = _parity;
             StopBits = _stopBits;
-                   
+
+            if (Interface == null) return;
             Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);                  
         }
 
@@ -36,9 +37,27 @@ namespace QuectelController.Communication
             return SerialPortStream.GetPortNames().ToList();
         }
 
-        public void Open()
+        public bool isOpen()
         {
-            if(Stream.IsOpen)
+            if (Stream == null)
+            {
+                return false;
+            }
+            if (!Stream.IsOpen)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public void Open()
+        {   
+            if(Stream == null)
+            {
+                return;
+            }
+
+            if(Stream.IsOpen )
             {
                 return;
             }
@@ -53,7 +72,12 @@ namespace QuectelController.Communication
 
         private void Close()
         {
-            if(!Stream.IsOpen)
+            if (Stream == null)
+            {
+                return;
+            }
+
+            if (!Stream.IsOpen)
             {
                 return;
             }

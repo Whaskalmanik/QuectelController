@@ -25,13 +25,16 @@ storage selected with AT+CPBS.It can also delete a phonebook entry in location n
 
         public override IReadOnlyList<ICommandParameter> AvailableParameters { get; } = new ICommandParameter[]
         {
-           new IntegerCommandParameter("Index", "Integer type. In the range of location numbers of phone book memory.", false ),
-           new StringCommandParameter("Text", "String type field of maximum length <tlength> in current TE character set specified by AT+CSCS.", true),
-           new IntegerCommandParameter("Number", "Phone number", true ),
+           new IntegerCommandParameter("Index", "Integer type. In the range of location numbers of phone book memory.", true),
+           new StringCommandParameter("Number", "Phone number", true ),
            new IntegerListCommandParameter("Type","Type of address of octet in integer format (See 3GPP TS 24.008). Usually, it has three kinds of values",new Dictionary<string, object> {
-               { "(U)SIM phonebook", "SM" },
-               { "MT dialed calls list", "DC" }
-           },true)
+               { "Unknown type", 129  },
+               { "International type (contains the character \"+\")", 145 },
+               { "National type", 161 }
+           },true),
+           new StringCommandParameter("Text", "String type field of maximum length <tlength> in current TE character set specified by AT+CSCS.", true),
+
+
         };
 
 

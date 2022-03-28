@@ -33,6 +33,7 @@ namespace QuectelController.ViewModels
 
         public List<IATCommand> CommandsList { get; }
         public List<string> CommandsHistory { get; set; }
+        
 
         //Listy
         public List<string> SerialPorts => SerialCommunication.GetSerialPorts();
@@ -55,8 +56,10 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Task> ShowHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ExecuteHistoryCommand { get; }
 
-        //Zvolené
-        public string SerialPort { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenMeasurementCommand { get; }
+
+    //Zvolené
+    public string SerialPort { get; set; }
         public int Baudrate { get; set; }
         public Parity Parity { get; set; }
         public int DataBits { get; set; }
@@ -70,7 +73,6 @@ namespace QuectelController.ViewModels
         public bool isProgressBarVissible { get; set; } = false;
         private string StatusBarColor { get; set; } = "Red";
         private string StatusBar { get; set; } = "Disconnected";
-
         private double ProgressValue { get; set; } = 0;
 
         [DoNotNotify]
@@ -81,6 +83,7 @@ namespace QuectelController.ViewModels
 
         public MainWindowViewModel()
         {
+            OpenMeasurementCommand = ReactiveCommand.Create(OpenMeasurement);
             ConnectCommand = ReactiveCommand.Create(Connect);
             DisconnectCommand = ReactiveCommand.Create(Disconnect);
             SendCommand = ReactiveCommand.Create(Send);
@@ -269,6 +272,12 @@ namespace QuectelController.ViewModels
         }
 
 
+        private void OpenMeasurement()
+        {
+            Window window = new MeasurementWindow();
+            window.Show();
+        }
+
         private void OnStringReceived(string output)
         {
             TerminalStringBuilder.Append(output);
@@ -281,13 +290,15 @@ namespace QuectelController.ViewModels
             {
                 return;
             }
+            serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
+            serialCommunication.Open();
+            if (!serialCommunication.isOpen()) return;
+
             StatusBar = "Connected";
             StatusBarColor = "Green";
             CanSend = true;
-            serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
             TerminalStringBuilder.Clear();
             TerminalString = string.Empty;
-            serialCommunication.Open();
             SerialCharactersSubscriptions = serialCommunication.ReceivedCharactersObservable
                 .Subscribe(OnStringReceived);
         }
@@ -339,7 +350,6 @@ namespace QuectelController.ViewModels
             var window = new WriteWindow(command);
             window.Title = command.Name;
 
-
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 await window.ShowDialog(desktop.MainWindow);
@@ -349,8 +359,12 @@ namespace QuectelController.ViewModels
 
             var parameters = command.AvailableParameters.Select(x => x.Clone() as ICommandParameter).ToArray();
 
-            for(int i =0;i<parameters.Length;i++)
+            for (int i =0;i<parameters.Length;i++)
             {
+                if ((bool)window.isIgnored && window.SelectedValues[i] == null)
+                {
+                    continue;
+                }
                 parameters[i].Value = window.SelectedValues[i];
             }
             

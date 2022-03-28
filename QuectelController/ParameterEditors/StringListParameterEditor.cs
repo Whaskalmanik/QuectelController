@@ -29,6 +29,10 @@ namespace QuectelController.ParameterEditors
 
         protected override object GetValueInternal(ComboBox control)
         {
+            if(control.SelectedItem == null)
+            {
+                return null;
+            }
             return (control.SelectedItem as ComboBoxItem).Content;
         }
     }

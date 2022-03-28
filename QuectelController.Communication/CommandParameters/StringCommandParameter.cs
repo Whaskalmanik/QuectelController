@@ -23,6 +23,10 @@ namespace QuectelController.Communication.CommandParameters
 
         public string ToCommandString()
         {
+            if (Value == null)
+            {
+                return "\"\"";
+            }
             return $"\"{Value}\"";
         }
 

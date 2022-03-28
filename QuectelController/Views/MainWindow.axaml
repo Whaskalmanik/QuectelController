@@ -77,7 +77,7 @@
       </Border>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="0" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Command History" Command="{Binding ShowHistoryCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Execute History" Command="{Binding ExecuteHistoryCommand}"/>
-      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="2" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="IP Adress"/>
+      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="2" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Measurement" Command="{Binding OpenMeasurementCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="3" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Network Info"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="4" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Restart Modem"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="5" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Connect"/>
