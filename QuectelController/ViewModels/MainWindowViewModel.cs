@@ -30,7 +30,6 @@ namespace QuectelController.ViewModels
     public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     {
         SerialCommunication serialCommunication;
-
         public List<IATCommand> CommandsList { get; }
         public List<string> CommandsHistory { get; set; }
         
@@ -48,6 +47,7 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Unit> SendCommand { get; }
         public ReactiveCommand<IATCommand, Unit> ExecuteCommand { get; }
         public ReactiveCommand<IATCommand, Unit> ReadCommand { get; }
+        public ReactiveCommand<IATCommand, Task> SelectDefualtCommand { get; }
         public ReactiveCommand<IATCommand, Task> WriteCommand { get; }
         public ReactiveCommand<IATCommand, Unit> TestCommand { get; }
         public ReactiveCommand<Unit, Task> ExportLogCommand { get; }
@@ -55,7 +55,6 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Task> ImportHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ShowHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ExecuteHistoryCommand { get; }
-
         public ReactiveCommand<Unit, Unit> OpenMeasurementCommand { get; }
 
     //Zvolené
@@ -71,6 +70,8 @@ namespace QuectelController.ViewModels
 
         private bool CanSend { get; set; } = false;
         public bool isProgressBarVissible { get; set; } = false;
+
+        public int TerminalTextChangedCount { get; set; }
         private string StatusBarColor { get; set; } = "Red";
         private string StatusBar { get; set; } = "Disconnected";
         private double ProgressValue { get; set; } = 0;
@@ -96,6 +97,7 @@ namespace QuectelController.ViewModels
             ImportHistoryCommand = ReactiveCommand.Create<Task>(ImportLog);
             ShowHistoryCommand = ReactiveCommand.Create<Task>(ShowHistoryWindow);
             ExecuteHistoryCommand = ReactiveCommand.Create<Task>(ExecuteHistory);
+            SelectDefualtCommand = ReactiveCommand.Create<IATCommand,Task>(SelectDefault);
             CommandsHistory = new List<string>();
             CommandsList = FillList();
             Categories = GetCategories();
@@ -282,6 +284,7 @@ namespace QuectelController.ViewModels
         {
             TerminalStringBuilder.Append(output);
             TerminalString = TerminalStringBuilder.ToString();
+            TerminalTextChangedCount++;
         }
 
         private void Connect()
@@ -328,16 +331,29 @@ namespace QuectelController.ViewModels
             if(!ToSendValue.Trim().Any())
             {
                 return;
-            }
+            } 
             serialCommunication.Write(ToSendValue);
-            TerminalStringBuilder.AppendLine(ToSendValue);
+            TerminalStringBuilder.AppendLine(ToSendValue).AppendLine();
             CommandsHistory.Add(ToSendValue);
             TerminalString = TerminalStringBuilder.ToString();
+            TerminalTextChangedCount++;
         }
 
         private void Execute(IATCommand command)
         {
             ToSendValue = command.CreateExecuteCommand();
+        }
+
+        private async Task SelectDefault(IATCommand command)
+        {
+            if (command.CanExecute)
+                Execute(command);
+            else if (command.CanWrite)
+                await Write(command);
+            else if (command.CanRead)
+                Read(command);
+            else
+                Test(command);
         }
 
         private async Task Write(IATCommand command)
@@ -403,25 +419,10 @@ namespace QuectelController.ViewModels
             List<bool> conditions = new List<bool>();
             foreach(var token in input.Split(" ").Select(x => x.Trim().ToLower()))
             {
-                if (token.ToLower().StartsWith("c:") && token.Length > 2)
-                {
-                    var type = token.Substring(2).ToLower();
-                    var condition = type switch
-                    {
-                        "test" => command.CanTest,
-                        "write" => command.CanWrite,
-                        "read" => command.CanRead,
-                        "execute" => command.CanExecute,
-                        _ => input.Contains(token)
-                    };
-                    conditions.Add(condition);
-                }
-                else
-                {
-                    bool containsDescription = command.Description.ToLower().Contains(token);
-                    bool containsName = command.Name.ToLower().Contains(token);
-                    conditions.Add(containsName || containsDescription);
-                }
+                bool containsDescription = command.Description.ToLower().Contains(token.ToLower());
+                bool containsName = command.Name.ToLower().Contains(token.ToLower());
+                bool containsCommand = command.GetRawCommand().ToLower().Contains(token.ToLower());
+                conditions.Add(containsName || containsDescription || containsCommand);
             }
             return conditions.All(x => x);
         }

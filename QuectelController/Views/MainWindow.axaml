@@ -1,8 +1,11 @@
 <Window xmlns ="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:QuectelController.ViewModels"
-        xmlns:models="clr-namespace:QuectelController;assembly=QuectelController"
+        xmlns:models="clr-namespace:QuectelController;assembly=QuectelController"     
         xmlns:lib="clr-namespace:QuectelController.Communication;assembly=QuectelController.Communication"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+        xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+        xmlns:iac="clr-namespace:Avalonia.Xaml.Interactions.Custom;assembly=Avalonia.Xaml.Interactions.Custom"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -15,29 +18,6 @@
       <vm:MainWindowViewModel/>
   </Design.DataContext>
   <DockPanel LastChildFill="True">
-    <Border Height="25" BorderBrush="Black" BorderThickness="0.5" DockPanel.Dock="Top">
-      <Menu DockPanel.Dock="Top">
-        <MenuItem Header="File">
-          <MenuItem Header="_Exit" Click="CloseButton"/>
-        </MenuItem>
-        <MenuItem Header="Module">
-          <MenuItem IsEnabled="{Binding CanSend}" Header="_Module info"/>
-          <MenuItem IsEnabled="{Binding CanSend}" Header="_Manufacturer Identification"/>
-          <MenuItem IsEnabled="{Binding CanSend}" Header="_Model Identification"/>
-          <MenuItem IsEnabled="{Binding CanSend}" Header="_Firmware Revision Identification"/>
-          <MenuItem IsEnabled="{Binding CanSend}" Header="_Mobile Equipment Identity (IMEI)"/>
-          <Separator/>
-          <MenuItem IsEnabled="{Binding CanSend}" Header="_Restart"/>
-          <MenuItem IsEnabled="{Binding CanSend}" Header="_Turn off"/>
-        </MenuItem>
-        <MenuItem Header="Log files">
-          <MenuItem Header="_Save command history" Command="{Binding ExportHistoryCommand}"/>
-          <MenuItem Header="_Open command history" Command="{Binding ImportHistoryCommand}"/>
-          <Separator/>
-          <MenuItem Header="_Save Log file" Command="{Binding ExportLogCommand} "/>
-        </MenuItem>
-      </Menu>
-    </Border>
     <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,Auto,*,Auto" RowDefinitions="33,33,33,33,33,33" Margin="4">
       <Label Margin="0,1,5,0" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Serial Port</Label>
       <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="0" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding SerialPort}" Items="{Binding SerialPorts}"></ComboBox>
@@ -54,13 +34,18 @@
       <TextBox Grid.Row="0" Grid.Column="2" Watermark="Search" Text="{Binding ToSearchValue.Value}"  ></TextBox>
       <Border Grid.Row="1" Grid.Column="2" Grid.RowSpan="5" BorderBrush="Black" BorderThickness="0.5">
         <ScrollViewer>
-          <TreeView Items="{Binding FilteredCategories}">
+          <TreeView FontSize="12" Items="{Binding FilteredCategories}">
             <TreeView.DataTemplates>
-              <TreeDataTemplate  DataType="models:TreeViewCategory" ItemsSource="{Binding Items}">
-                <TextBlock Foreground="MediumSlateBlue" Text="{Binding Name}" />
+              <TreeDataTemplate DataType="models:TreeViewCategory" ItemsSource="{Binding Items}">
+                <TextBlock FontSize="12" Foreground="MediumSlateBlue" Text="{Binding Name}" />
               </TreeDataTemplate>
               <DataTemplate DataType="models:TreeViewItem">
                 <TextBlock Name="SearchTB" Text="{Binding Command.Name}" ToolTip.Tip="{Binding Command.Description}" >
+                  <i:Interaction.Behaviors>
+                    <ia:EventTriggerBehavior EventName="Tapped" SourceObject="{Binding #SearchTB}">
+                      <ia:InvokeCommandAction Command="{Binding $parent[Window].DataContext.SelectDefualtCommand}" CommandParameter="{Binding Command}"/>
+                    </ia:EventTriggerBehavior>
+                  </i:Interaction.Behaviors>
                   <TextBlock.ContextMenu>
                     <ContextMenu>
                       <MenuItem Header="Execute" IsVisible="{Binding Command.CanExecute}" Command="{Binding $parent[Window].DataContext.ExecuteCommand}" CommandParameter="{Binding Command}"/>
@@ -77,10 +62,10 @@
       </Border>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="0" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Command History" Command="{Binding ShowHistoryCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Execute History" Command="{Binding ExecuteHistoryCommand}"/>
-      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="2" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Measurement" Command="{Binding OpenMeasurementCommand}"/>
-      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="3" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Network Info"/>
-      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="4" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Restart Modem"/>
-      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="5" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Connect"/>
+      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="2" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Load History" Command="{Binding ImportHistoryCommand}"/>
+      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="3" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Export History" Command="{Binding ExportHistoryCommand}"/>
+      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="4" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Export Log" Command="{Binding ExportLogCommand}"/>
+      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="5" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Measurement" Command="{Binding OpenMeasurementCommand}"/>
     </Grid>
     <Border DockPanel.Dock="Bottom" BorderThickness="0.5" BorderBrush="Black">
       <Grid Margin="4.5,0,4,3"  RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
@@ -89,12 +74,17 @@
       </Grid>
     </Border>
     <Grid Margin="4.5,0,4,1" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" DockPanel.Dock="Bottom">
-      <Button  VerticalAlignment="Stretch" IsEnabled="{Binding CanSend}" Command="{Binding SendCommand}" Width="100" Grid.Row="0" Grid.Column="1"  Foreground="White" Background="MediumSlateBlue" Content="Send"/>
+      <Button  VerticalAlignment="Stretch" IsEnabled="{Binding CanSend}" Command="{Binding SendCommand}" Width="100" Grid.Row="0" Grid.Column="1"  Foreground="White" Background="MediumSlateBlue" Content="Send" HotKey="Enter"/>
       <TextBox Grid.Row="0" Grid.Column="0" Watermark="Command to be sent" Text="{Binding ToSendValue}"></TextBox>
     </Grid>
     <Border Margin="4.5,2,5,2" BorderBrush="Black" BorderThickness="0.5">
-      <ScrollViewer>
-        <TextBlock Padding ="5" FontSize="12" Foreground="Black" Text="{Binding TerminalString}"></TextBlock>
+      <ScrollViewer Name="TerminalScroller">
+        <i:Interaction.Behaviors>
+          <ia:DataTriggerBehavior Binding="{Binding TerminalTextChangedCount}" ComparisonCondition="GreaterThan" Value="0">
+            <ia:CallMethodAction MethodName="ScrollToEnd" TargetObject="{Binding #TerminalScoller}"/>
+          </ia:DataTriggerBehavior>
+        </i:Interaction.Behaviors>
+        <TextBox IsReadOnly="True" Padding ="5" FontSize="12" FontFamily="lucon.ttf" Foreground="Black" Text="{Binding TerminalString}"></TextBox>
       </ScrollViewer>
     </Border>
   </DockPanel>

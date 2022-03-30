@@ -15,12 +15,19 @@ namespace QuectelController.Views
             InitializeComponent();
 #if DEBUG   
             this.AttachDevTools();
-#endif
+#endif  
+            //this.FindControl<TextBlock>("SearchTB").Tapped += MainWindow_Tapped; ;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+            
+        }
+
+        private void MainWindow_Tapped(object sender, RoutedEventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
 
         private void CloseButton(object sender, RoutedEventArgs e)

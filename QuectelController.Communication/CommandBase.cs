@@ -87,5 +87,10 @@ namespace QuectelController.Communication
             var lenght = stringBuilder.Length;
             return stringBuilder.ToString();
         }
+
+        public string GetRawCommand()
+        {
+            return RawCommand;
+        }
     }
 }

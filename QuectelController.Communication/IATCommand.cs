@@ -16,6 +16,8 @@ namespace QuectelController.Communication
         CommandCategory Category { get; }
         IReadOnlyList<ICommandParameter> AvailableParameters { get; }
 
+
+        string GetRawCommand();
         string CreateExecuteCommand();
         string CreateTestCommand();
         string CreateReadCommand();
