@@ -23,8 +23,14 @@ namespace QuectelController.Views
 
         private PeriodicTask PeriodicTask = new PeriodicTask();
 
-        private List<double> datax = new List<double>();
-        private List<double> datay = new List<double>();
+        private List<double> RSRPx = new List<double>();
+        private List<double> RSRPy = new List<double>();
+
+        private List<double> RSRQx = new List<double>();
+        private List<double> RSRQy = new List<double>();
+
+        private List<double> SINRx = new List<double>();
+        private List<double> SINRy = new List<double>();
         int counter = 0;
 
 
@@ -81,10 +87,10 @@ namespace QuectelController.Views
 
         private void ReceiveAndParse(string output)
         {
-            datax.Add(counter);
+            RSRQx.Add(counter);
             counter++;
-            datay.Add(1);
-            plot.Plot.AddScatterLines(datax.ToArray(), datay.ToArray());
+            RSRQy.Add(1);
+            plot.Plot.AddScatterLines(RSRQx.ToArray(), RSRQy.ToArray());
         }
 
         private void Stop(object sender, RoutedEventArgs e)

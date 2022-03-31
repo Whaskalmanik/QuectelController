@@ -22,6 +22,10 @@
       <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="Orange" Content="Pause"/>
       <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Export as csv"/>
       <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Import"/>
+      <RadioButton Name="SAMode" GroupName="Mode" Content="SA Mode" />
+      <RadioButton Name="ENDCMode" GroupName="Mode" Content="EN-DC Mode" />
+      <RadioButton Name="LTEMode" GroupName="Mode" Content="LTE Mode" />
+      <RadioButton Name="WCDMAMode" GroupName="Mode" Content="WCDMA Mode" />
     </StackPanel>
     <Border Margin="4.5,0,4,5" BorderThickness="1" BorderBrush="Black">
       <ScottPlot:AvaPlot Name="AvaPlot1"/>
