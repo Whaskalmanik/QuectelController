@@ -55,7 +55,7 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Task> ImportHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ShowHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ExecuteHistoryCommand { get; }
-        public ReactiveCommand<Unit, Unit> OpenMeasurementCommand { get; }
+        public ReactiveCommand<Unit, Task> OpenMeasurementCommand { get; }
 
     //Zvolené
     public string SerialPort { get; set; }
@@ -84,7 +84,7 @@ namespace QuectelController.ViewModels
 
         public MainWindowViewModel()
         {
-            OpenMeasurementCommand = ReactiveCommand.Create(OpenMeasurement);
+            OpenMeasurementCommand = ReactiveCommand.Create<Task>(OpenMeasurement);
             ConnectCommand = ReactiveCommand.Create(Connect);
             DisconnectCommand = ReactiveCommand.Create(Disconnect);
             SendCommand = ReactiveCommand.Create(Send);
@@ -175,7 +175,6 @@ namespace QuectelController.ViewModels
                         tw.WriteLine(line);
                 }
             }
-
         }
         private async Task ExportLog()
         {
@@ -274,10 +273,16 @@ namespace QuectelController.ViewModels
         }
 
 
-        private void OpenMeasurement()
+        private async Task OpenMeasurement()
         {
             Window window = new MeasurementWindow();
-            window.Show();
+
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                await window.ShowDialog(desktop.MainWindow);
+            }
+            SerialCharactersSubscriptions = serialCommunication.ReceivedCharactersObservable
+    .Subscribe(OnStringReceived);
         }
 
         private void OnStringReceived(string output)

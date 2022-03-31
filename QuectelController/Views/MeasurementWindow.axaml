@@ -10,20 +10,18 @@
 
   <DockPanel LastChildFill="True">
     <Grid Margin="4.5,0,4,5" DockPanel.Dock="Bottom" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto,Auto">
-      <Button Grid.Row="3" Background="Green" Foreground="White" Grid.Column="3" Content="Start" Width="80" HorizontalContentAlignment="Center"/>
-      <Button Grid.Row="3" Background="Red" Foreground="White" Grid.Column="2" Content="Stop" Width="80" HorizontalContentAlignment="Center"/>
+      <Button Grid.Row="3" Click="Close" Foreground="White" Background="MediumSlateBlue" Grid.Column="3" Content="Close" Width="80" HorizontalContentAlignment="Center"/>
     </Grid>
     <ScrollViewer Margin="4.5,0,4,5">
       <Grid Name="GridLayout" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" >
       </Grid>
     </ScrollViewer>
     <StackPanel DockPanel.Dock="Left">
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Command History" />
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Execute History"/>
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Measurement"/>
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Network Info"/>
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Restart Modem"/>
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Connect"/>
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="Start" Background="Green" Content="Start" />
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="Red" Content="Stop"/>
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="Orange" Content="Pause"/>
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Export as csv"/>
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Background="MediumSlateBlue" Content="Import"/>
     </StackPanel>
     <Border Margin="4.5,0,4,5" BorderThickness="1" BorderBrush="Black">
       <ScottPlot:AvaPlot Name="AvaPlot1"/>
