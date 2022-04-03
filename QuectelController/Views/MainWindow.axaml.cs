@@ -25,11 +25,6 @@ namespace QuectelController.Views
             
         }
 
-        private void MainWindow_Tapped(object sender, RoutedEventArgs e)
-        {
-            throw new System.NotImplementedException();
-        }
-
         private void CloseButton(object sender, RoutedEventArgs e)
         {
             this.Close();

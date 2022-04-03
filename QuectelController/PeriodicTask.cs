@@ -9,25 +9,28 @@ namespace QuectelController
 {
     public class PeriodicTask
     {
-        public static async Task Run(Action action, TimeSpan period, CancellationToken cancellationToken)
+        static CancellationTokenSource token;
+        private static async Task Run(Action action, TimeSpan period, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(period, cancellationToken);
+                await Task.Delay(period);
                 if (!cancellationToken.IsCancellationRequested)
                     action();
             }
         }
-        public static Task Run(Action actiom, TimeSpan period)
+        public static Task Run(Action action, TimeSpan period)
         {
-            return Run(actiom, period, CancellationToken.None);
+            token = new CancellationTokenSource();
+            CancellationToken ct = token.Token;
+            return Run(action, period, ct);
         }
-
-        public static Task Stop(Action actiom, TimeSpan period)
+        
+        public static void Stop()
         {
-            CancellationToken cancellationToken = new CancellationToken();
-            cancellationToken.ThrowIfCancellationRequested();
-            return Run(actiom, TimeSpan.Zero, cancellationToken);
+            token?.Cancel();
+            token?.Dispose();
+            token = null;
         }
     }
 }

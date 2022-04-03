@@ -45,6 +45,7 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
         public ReactiveCommand<Unit, Unit> DisconnectCommand { get; }
         public ReactiveCommand<Unit, Unit> SendCommand { get; }
+
         public ReactiveCommand<IATCommand, Unit> ExecuteCommand { get; }
         public ReactiveCommand<IATCommand, Unit> ReadCommand { get; }
         public ReactiveCommand<IATCommand, Task> SelectDefualtCommand { get; }
@@ -56,9 +57,10 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Task> ShowHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> ExecuteHistoryCommand { get; }
         public ReactiveCommand<Unit, Task> OpenMeasurementCommand { get; }
+        public ReactiveCommand<Unit, Unit> ClosingCommand { get; }
 
-    //Zvolené
-    public string SerialPort { get; set; }
+        //Zvolené
+        public string SerialPort { get; set; }
         public int Baudrate { get; set; }
         public Parity Parity { get; set; }
         public int DataBits { get; set; }
@@ -98,6 +100,7 @@ namespace QuectelController.ViewModels
             ShowHistoryCommand = ReactiveCommand.Create<Task>(ShowHistoryWindow);
             ExecuteHistoryCommand = ReactiveCommand.Create<Task>(ExecuteHistory);
             SelectDefualtCommand = ReactiveCommand.Create<IATCommand,Task>(SelectDefault);
+            ClosingCommand = ReactiveCommand.Create(Closing);
             CommandsHistory = new List<string>();
             CommandsList = FillList();
             Categories = GetCategories();
@@ -134,6 +137,10 @@ namespace QuectelController.ViewModels
                 );
         }
 
+        private void Closing()
+        {
+            Disconnect();
+        }
         private async Task ExportCommands()
         {
             SaveFileDialog SaveFileBox = new SaveFileDialog();
@@ -151,6 +158,8 @@ namespace QuectelController.ViewModels
 
             if (!CommandsHistory.Any())
             {
+
+                //todo nová tøída message box 
                 var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
                     new MessageBoxStandardParams
                     {
@@ -168,7 +177,10 @@ namespace QuectelController.ViewModels
             if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var path = await SaveFileBox.ShowAsync(desktop.MainWindow);
-
+                if (path == null)
+                {
+                    return;
+                }
                 using (TextWriter tw = new StreamWriter(path))
                 {
                     foreach (string line in CommandsHistory)
@@ -193,6 +205,10 @@ namespace QuectelController.ViewModels
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var path = await SaveFileBox.ShowAsync(desktop.MainWindow);
+                if (path == null)
+                {
+                    return;
+                }
                 await File.WriteAllTextAsync(path, TerminalString);
             }
         }
@@ -213,6 +229,10 @@ namespace QuectelController.ViewModels
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var path = await openFileDialog.ShowAsync(desktop.MainWindow);
+                if(path == null)
+                {
+                    return;
+                }
                 var logFile = File.ReadAllLines(path.FirstOrDefault());
                 CommandsHistory = new List<string>(logFile);
             }
@@ -275,14 +295,14 @@ namespace QuectelController.ViewModels
 
         private async Task OpenMeasurement()
         {
-            Window window = new MeasurementWindow();
+            Window window = new MeasurementWindow(serialCommunication);
 
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                UnsubscribeFromSerial();
                 await window.ShowDialog(desktop.MainWindow);
+                SubscribeToSerial();
             }
-            SerialCharactersSubscriptions = serialCommunication.ReceivedCharactersObservable
-    .Subscribe(OnStringReceived);
         }
 
         private void OnStringReceived(string output)
@@ -292,23 +312,50 @@ namespace QuectelController.ViewModels
             TerminalTextChangedCount++;
         }
 
+        private void SubscribeToSerial()
+        {
+            SerialCharactersSubscriptions = serialCommunication.ReceivedCharactersObservable
+    .Subscribe(OnStringReceived);
+        }
+        private void UnsubscribeFromSerial()
+        {
+            SerialCharactersSubscriptions?.Dispose();
+            SerialCharactersSubscriptions = null;
+        }
+
         private void Connect()
         {
             if (serialCommunication != null)
             {
                 return;
             }
-            serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
-            serialCommunication.Open();
-            if (!serialCommunication.isOpen()) return;
+            try
+            {
+                serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
+                serialCommunication.Open();
+                SubscribeToSerial();
 
-            StatusBar = "Connected";
-            StatusBarColor = "Green";
-            CanSend = true;
-            TerminalStringBuilder.Clear();
-            TerminalString = string.Empty;
-            SerialCharactersSubscriptions = serialCommunication.ReceivedCharactersObservable
-                .Subscribe(OnStringReceived);
+                StatusBar = "Connected";
+                StatusBarColor = "Green";
+                CanSend = true;
+                TerminalStringBuilder.Clear();
+                TerminalString = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
+                new MessageBoxStandardParams
+                {
+                    ContentTitle = "Error",
+                    ContentMessage = ex.Message,
+                    Icon = Icon.Error,
+                });
+                mb.Show();
+                Disconnect();
+                return;
+            }
+
+
         }
         private void Disconnect()
         {
@@ -319,7 +366,7 @@ namespace QuectelController.ViewModels
             StatusBar = "Disconnected";
             StatusBarColor = "Red";
             CanSend = false;
-            SerialCharactersSubscriptions.Dispose();
+            UnsubscribeFromSerial();
             serialCommunication.Dispose();
             serialCommunication = null;
         }

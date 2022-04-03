@@ -29,7 +29,7 @@ namespace QuectelController.Communication
             StopBits = _stopBits;
 
             if (Interface == null) return;
-            Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);                  
+            Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);
         }
 
         public static List<string> GetSerialPorts()
@@ -62,15 +62,21 @@ namespace QuectelController.Communication
                 return;
             }
             Stream.Open();
+            
+            Stream.WriteTimeout = 5000;
+            Stream.ReadTimeout = 5000;
+
             ReceivedCharactersObservable = Observable.FromEvent<EventHandler<SerialDataReceivedEventArgs>, SerialDataReceivedEventArgs>(
                 x => (obj, args) => x(args),
                 x => Stream.DataReceived += x,
                 x => Stream.DataReceived -= x)
                 .Where(x => x.EventType == SerialData.Chars)
                 .Select(x => Stream.ReadExisting());
+            
         }
 
-        private void Close()
+
+        private void Close() 
         {
             if (Stream == null)
             {
@@ -90,6 +96,8 @@ namespace QuectelController.Communication
             using var writer = new StreamWriter(Stream,Encoding.ASCII,1024,true);
             writer.Write(message);
             writer.Write('\r');
+
+            //todo TimeoutException
         }
 
         public string Read()

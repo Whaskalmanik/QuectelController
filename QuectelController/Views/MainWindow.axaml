@@ -12,8 +12,17 @@
         x:Class="QuectelController.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         MinHeight="700" MinWidth="750"
-        Title="Quectel Modem Controller">
+        Title="Quectel Modem Controller"
+        Name="MainWindow">
 
+
+
+  <i:Interaction.Behaviors>
+    <ia:EventTriggerBehavior EventName="Closing" SourceObject="{Binding #MainWindow}">
+      <ia:InvokeCommandAction Command="{Binding ClosingCommand}"/>
+    </ia:EventTriggerBehavior>
+  </i:Interaction.Behaviors>
+  
   <Design.DataContext>
       <vm:MainWindowViewModel/>
   </Design.DataContext>
