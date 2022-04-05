@@ -53,9 +53,10 @@ namespace QuectelController.Views
         public MeasurementWindow()
         {
             InitializeComponent();
+            
+            this.Closing += MeasurementWindow_Closing;
 #if DEBUG
             this.AttachDevTools();
-            this.Closing += MeasurementWindow_Closing;
 #endif
         }
 
@@ -113,14 +114,7 @@ namespace QuectelController.Views
         {
             if (!serial.isOpen())
             {
-                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
-                    new MessageBoxStandardParams
-                    {
-                        ContentTitle = "Error",
-                        ContentMessage = "Connection error",
-                        Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    });
-                await mb.Show();
+                MessageBoxes.ShowError("Connection error", "Connection is not established");
                 return;
             }
             counter = 0;
@@ -142,7 +136,6 @@ namespace QuectelController.Views
             QueryPrimaryServingCell command = new QueryPrimaryServingCell();
             var temp = command.CreateWriteCommand(Array.Empty<ICommandParameter>());
             serial.Write(temp);
-            //todo TimeoutException
         }
 
         private void ReceiveAndParse(string output)
@@ -234,20 +227,23 @@ namespace QuectelController.Views
 
         private async void Import(object sender, RoutedEventArgs e)
         {
-
-            //todo zamést
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Open csv file";
-            List<FileDialogFilter> Filters = new List<FileDialogFilter>();
-            FileDialogFilter filter = new FileDialogFilter();
-            List<string> extension = new List<string>();
-            extension.Add("csv");
-            filter.Extensions = extension;
-            filter.Name = " file";
-            Filters.Add(filter);
-            openFileDialog.Filters = Filters;
-            openFileDialog.AllowMultiple = false;
-            var path = await openFileDialog.ShowAsync(this);
+            OpenFileDialog saveFileBox = new OpenFileDialog
+            {
+                Title = "Open csv file...",
+                AllowMultiple = false,
+                Filters = new List<FileDialogFilter>()
+                {
+                    new FileDialogFilter()
+                    {
+                        Name = "CSV file",
+                        Extensions = new List<string>
+                        {
+                            "csv"
+                        }
+                    }
+                }
+            };
+            var path = await saveFileBox.ShowAsync(this);
 
             if (path == null)
             {
@@ -263,13 +259,13 @@ namespace QuectelController.Views
             }
             catch (Exception ex)
             {
-                //TODO message box
+                MessageBoxes.ShowError("Import error", "Error while importing the file, check if the file is in the right csv format");
                 return;
             }
 
             if (records?.Any() == false)
             {
-                //TODO message box
+                MessageBoxes.ShowError("Import error", "Imported list is empty");
                 return;
             }
             RSRPx = records.Select(x => x.RSRPx).ToList();

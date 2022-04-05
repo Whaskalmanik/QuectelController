@@ -158,19 +158,7 @@ namespace QuectelController.ViewModels
 
             if (!CommandsHistory.Any())
             {
-
-                //todo nová tøída message box 
-                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
-                    new MessageBoxStandardParams
-                    {
-                        ContentTitle = "Error",
-                        ContentMessage = "Exported list is empty.",
-                        Icon = Icon.Error,
-                       // WindowIcon = new WindowIcon(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("Assets/avalonia-logo.ico"))),
-                    }); 
-
-                
-                await mb.Show();
+                MessageBoxes.ShowError("History error", "Cannot export empty list");
                 return;
             }
 
@@ -258,14 +246,7 @@ namespace QuectelController.ViewModels
 
             if (CommandsHistory.Count == 0)
             {
-                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
-                    new MessageBoxStandardParams
-                    {
-                        ContentTitle = "Info",
-                        ContentMessage = "History is empty",
-                        Icon = Icon.Info,
-                    });
-                var s = mb.Show();
+                MessageBoxes.ShowError("History", "Cannot execute with empty history");
                 return;
             }
             if (!CommandsHistory.Any())
@@ -343,14 +324,7 @@ namespace QuectelController.ViewModels
             }
             catch (Exception ex)
             {
-                var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
-                new MessageBoxStandardParams
-                {
-                    ContentTitle = "Error",
-                    ContentMessage = ex.Message,
-                    Icon = Icon.Error,
-                });
-                mb.Show();
+                MessageBoxes.ShowError("Connection error",ex.Message);
                 Disconnect();
                 return;
             }
@@ -384,7 +358,15 @@ namespace QuectelController.ViewModels
             {
                 return;
             } 
-            serialCommunication.Write(ToSendValue);
+            try
+            {
+                serialCommunication.Write(ToSendValue);
+            }
+            catch(Exception ex)
+            {
+                MessageBoxes.ShowError("Connection Error",ex.Message);
+                return;
+            }
             TerminalStringBuilder.AppendLine(ToSendValue).AppendLine();
             CommandsHistory.Add(ToSendValue);
             TerminalString = TerminalStringBuilder.ToString();
