@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Drawing.Imaging;
 using CsvHelper;
+using ScottPlot.Renderable;
 
 namespace QuectelController.Views
 {
@@ -25,36 +26,47 @@ namespace QuectelController.Views
     public partial class MeasurementWindow : Window
     {
         public SerialCommunication serial;
+        public bool ConnectionTimeout = false;
 
-        private AvaPlot plot;
+        private static int MEASURE_FREQUENCY = 5;
+
+        private AvaPlot RSRQplot;
+        private AvaPlot RSRPplot;
         private StringBuilder StringBufferBuilder { get; set; } = new StringBuilder();
         private IDisposable SerialCharactersSubscriptions { get; set; }
 
-        private List<double> RSRPx = new List<double>();
-        private List<double> RSRPy = new List<double>();
+        private List<double> Time = new List<double>();
 
-        private List<double> RSRQx = new List<double>();
-        private List<double> RSRQy = new List<double>();
+        private List<double> RSRP_5G = new List<double>();
+        private List<double> RSRQ_5G = new List<double>();
+        private List<double> SINR_5G = new List<double>();
 
-        private List<double> SINRx = new List<double>();
-        private List<double> SINRy = new List<double>();
+        private List<double> RSRP_LTE = new List<double>();
+        private List<double> RSRQ_LTE = new List<double>();
+        private List<double> SINR_LTE = new List<double>();
 
         private ScatterPlot RSRQPlot;
         private ScatterPlot RSRPPlot;
         private ScatterPlot SINRPlot;
 
+        private ScatterPlot SecondRSRQPlot;
+        private ScatterPlot SecondRSRPPlot;
+        private ScatterPlot SecondSINRPlot;
+
+        private Button StartBtn;
+        private Button CloseBtn;
+
         private RadioButton SAMode;
         private RadioButton ENDCMode;
         private RadioButton LTEMode;
-        private RadioButton WCDMAMode;
 
         private int counter = 0;
 
         public MeasurementWindow()
         {
             InitializeComponent();
-            
-            this.Closing += MeasurementWindow_Closing;
+
+            Closing += MeasurementWindow_Closing;
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -71,23 +83,33 @@ namespace QuectelController.Views
         {
             this.serial = serial;
 
-            plot = this.Find<AvaPlot>("AvaPlot1");
-            plot.Plot.Legend(true, ScottPlot.Alignment.LowerRight);
-            plot.Plot.Title("RSRQ, RSRP, SINR");
-            plot.Plot.XLabel("Time [sec]");
-            plot.Plot.YLabel("Ratio [DB]");
+            RSRQplot = this.Find<AvaPlot>("AvaPlot1");
+            RSRQplot.Plot.Legend(true, ScottPlot.Alignment.LowerRight);
+            RSRQplot.Plot.Title("RSRQ, RSRP");
+            RSRQplot.Plot.XLabel("Time [sec]");
+            RSRQplot.Plot.YLabel("Value [dB]");
 
-            RSRQPlot = RenderGraph("RSRQ", Color.Green, RSRQx, RSRQy);
-            RSRPPlot = RenderGraph("RSRP", Color.Red, RSRPx, RSRPy);
-            SINRPlot = RenderGraph("SINR", Color.Blue, SINRx, SINRy);
+            RSRPplot = this.Find<AvaPlot>("AvaPlot2");
+            RSRPplot.Plot.Legend(true, ScottPlot.Alignment.LowerRight);
+            RSRPplot.Plot.Title("RSRP");
+            RSRPplot.Plot.XLabel("Time [sec]");
+            RSRPplot.Plot.YLabel("Value [dBm]");
+
+            RSRQPlot = RenderGraph("5G Reference Signal Received Quality (RSRQ)", Color.Green, Time, RSRQ_5G, 0);
+            RSRPPlot = RenderGraph("5G Reference Signal Received Power (RSRP)", Color.Red, Time, RSRP_5G, 0);
+            SINRPlot = RenderGraph("5G Signal-to-Interface plus Noise Ratio (SINR)", Color.Blue, Time, SINR_5G, 0);
+            SecondRSRQPlot = RenderGraph("LTE Reference Signal Received Quality (RSRQ)", Color.OrangeRed, Time, RSRQ_LTE, 0);
+            SecondRSRPPlot = RenderGraph("LTE Reference Signal Received Power (RSRP)", Color.DarkCyan, Time, RSRP_LTE, 0);
+            SecondSINRPlot = RenderGraph("LTE Signal-to-Interface plus Noise Ratio (SINR", Color.Crimson, Time, SINR_LTE, 0);
 
             SAMode = this.Find<RadioButton>("SAMode");
             ENDCMode = this.Find<RadioButton>("ENDCMode");
             LTEMode = this.Find<RadioButton>("LTEMode");
-            WCDMAMode = this.Find<RadioButton>("WCDMAMode");
+            CloseBtn = this.Find<Button>("CloseBtn");
+            StartBtn = this.Find<Button>("StartBtn");
 
             SerialCharactersSubscriptions = serial.ReceivedCharactersObservable
-    .Subscribe(ReceiveAndParse);
+    .Subscribe(Receive);
         }
 
         private void InitializeComponent()
@@ -95,31 +117,62 @@ namespace QuectelController.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+        private void ClearLists()
+        {
+            RSRP_5G.Clear();
+            RSRQ_5G.Clear();
+            SINR_5G.Clear();
 
-        private ScatterPlot RenderGraph(string Label, Color color, List<double> x, List<double> y)
+            RSRP_LTE.Clear();
+            RSRQ_LTE.Clear();
+            SINR_LTE.Clear();
+        }
+
+        private ScatterPlot RenderGraph(string label, Color color, List<double> x, List<double> y, int index)
         {
             ScatterPlot plot = new ScatterPlot(x.ToArray(), y.ToArray())
             {
-                Label = Label,
+                Label = label,
                 LineColor = color,
                 LineWidth = 1,
                 MarkerShape = ScottPlot.MarkerShape.filledCircle,
                 MarkerColor = color,
-                MarkerSize = 5
+                MarkerSize = 5,
+                YAxisIndex = index,
+                XAxisIndex = 0,
             };
             return plot;
         }
 
         private async void Start(object sender, RoutedEventArgs e)
         {
-            if (!serial.isOpen())
+            if (!serial.IsOpen())
             {
-                MessageBoxes.ShowError("Connection error", "Connection is not established");
+                MessageBoxes.ShowError(this,"Connection error", "Connection is not established");
                 return;
             }
-            counter = 0;
+           
             ActivateRadioButton(false);
-            await PeriodicTask.Run(Measure, TimeSpan.FromSeconds(5));
+            try
+            {
+                AllowStart(false);
+                await PeriodicTask.Run(Measure, TimeSpan.FromSeconds(MEASURE_FREQUENCY));
+            }
+            catch (TimeoutException ex)
+            {
+                PeriodicTask.Stop();
+                ConnectionTimeout = true;
+                CloseBtn.IsEnabled = false;
+                StartBtn.IsEnabled = false;
+                MessageBoxes.ShowError(this, "Connection timeout", "Connection to the serial port timed out.");
+            }
+
+        }
+
+        private void AllowStart(bool action)
+        {
+            CloseBtn.IsEnabled = !action;
+            StartBtn.IsEnabled = action;
         }
 
         private void ActivateRadioButton(bool action)
@@ -127,9 +180,7 @@ namespace QuectelController.Views
             SAMode.IsEnabled = action;
             ENDCMode.IsEnabled = action;
             LTEMode.IsEnabled = action;
-            WCDMAMode.IsEnabled = action;
         }
-
 
         private void Measure()
         {
@@ -138,59 +189,111 @@ namespace QuectelController.Views
             serial.Write(temp);
         }
 
-        private void ReceiveAndParse(string output)
+        private void Receive(string output)
         {
             try
             {
                 StringBufferBuilder.Append(output);
                 if (StringBufferBuilder.ToString().Trim().EndsWith("OK"))
                 {
-                    if (SAMode.IsChecked == true)
-                    {
-                        var separated = StringBufferBuilder.ToString().Split(',');
-
-                        RSRQy.Add(Double.Parse(separated[12]));
-                        RSRPy.Add(Double.Parse(separated[13]));
-                        SINRy.Add(Double.Parse(separated[14]));
-
-                        RSRQx.Add(counter);
-                        RSRPx.Add(counter);
-                        SINRx.Add(counter);
-                    }
-                    StringBufferBuilder.Clear();
+                    Parse(StringBufferBuilder.Append(output).ToString());
                     Refresh();
+                    StringBufferBuilder.Clear();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 StringBufferBuilder.Clear();
             }
-            counter += 5;
-            
+
+            counter += MEASURE_FREQUENCY;
+        }
+
+        private void Parse(string toParse)
+        {
+            var separated = toParse.Split(',');
+            if (SAMode.IsChecked == true)
+            {
+                RSRP_5G.Add(double.Parse(separated[12]));
+                RSRQ_5G.Add(double.Parse(separated[13]));
+                SINR_5G.Add(double.Parse(separated[14]));
+            }
+
+            if (ENDCMode.IsChecked == true)
+            {
+                RSRP_5G.Add(double.Parse(separated[12]));
+                RSRQ_5G.Add(double.Parse(separated[13]));
+                SINR_5G.Add(double.Parse(separated[15]));
+                RSRP_LTE.Add(double.Parse(separated[22]));
+                SINR_LTE.Add(double.Parse(separated[23])); 
+                RSRQ_LTE.Add(double.Parse(separated[24]));
+            }
+
+            if (LTEMode.IsChecked == true)
+            {
+                RSRP_LTE.Add(double.Parse(separated[13]));
+                RSRQ_LTE.Add(double.Parse(separated[14]));
+                SINR_LTE.Add(double.Parse(separated[16]));
+            }
+
+            Time.Add(counter);
         }
 
         private void Refresh()
         {
-            plot.Plot.Clear();
+            RSRQplot.Plot.Clear();
+            RSRPplot.Plot.Clear();
 
-            RSRQPlot.Update(RSRQx.ToArray(), RSRQy.ToArray());
-            RSRPPlot.Update(RSRPx.ToArray(), RSRPy.ToArray());
-            SINRPlot.Update(SINRx.ToArray(), SINRy.ToArray());
+            if (SAMode.IsChecked == true)
+            {
+                RSRQPlot.Update(Time.ToArray(), RSRQ_5G.ToArray());
+                RSRPPlot.Update(Time.ToArray(), RSRP_5G.ToArray());
+                SINRPlot.Update(Time.ToArray(), SINR_5G.ToArray());
 
-            plot.Plot.Add(RSRQPlot);
-            plot.Plot.Add(RSRPPlot);
-            plot.Plot.Add(SINRPlot);
+                RSRQplot.Plot.Add(RSRQPlot);
+                RSRPplot.Plot.Add(RSRPPlot);
+                RSRQplot.Plot.Add(SINRPlot);
+            }
+            else if (ENDCMode.IsChecked == true)
+            {
+                RSRQPlot.Update(Time.ToArray(), RSRQ_5G.ToArray());
+                RSRPPlot.Update(Time.ToArray(), RSRP_5G.ToArray());
+                SINRPlot.Update(Time.ToArray(), SINR_5G.ToArray());
 
-            plot.Plot.AxisAuto();
-            plot.Refresh();
+                SecondRSRQPlot.Update(Time.ToArray(), RSRQ_LTE.ToArray());
+                SecondRSRPPlot.Update(Time.ToArray(), RSRP_LTE.ToArray());
+                SecondSINRPlot.Update(Time.ToArray(), SINR_LTE.ToArray());
+
+                RSRQplot.Plot.Add(RSRQPlot);
+                RSRPplot.Plot.Add(RSRPPlot);
+                RSRQplot.Plot.Add(SINRPlot);
+
+                RSRQplot.Plot.Add(SecondRSRQPlot);
+                RSRPplot.Plot.Add(SecondRSRPPlot);
+                RSRQplot.Plot.Add(SecondSINRPlot);
+            }
+            else if (LTEMode.IsChecked == true)
+            {
+                SecondRSRQPlot.Update(Time.ToArray(), RSRQ_LTE.ToArray());
+                SecondRSRPPlot.Update(Time.ToArray(), RSRP_LTE.ToArray());
+                SecondSINRPlot.Update(Time.ToArray(), SINR_LTE.ToArray());
+
+                RSRQplot.Plot.Add(SecondRSRQPlot);
+                RSRPplot.Plot.Add(SecondRSRPPlot);
+                RSRQplot.Plot.Add(SecondSINRPlot);
+            }
+
+            RSRQplot.Plot.AxisAuto();
+            RSRPplot.Plot.AxisAuto();
+            RSRQplot.Refresh();
+            RSRPplot.Refresh();
         }
-
 
         private void Stop(object sender, RoutedEventArgs e)
         {
             PeriodicTask.Stop();
             ActivateRadioButton(true);
-
+            AllowStart(true);
         }
 
         private async void Export(object sender, RoutedEventArgs e)
@@ -206,10 +309,10 @@ namespace QuectelController.Views
                         Name = "CSV file",
                         Extensions = new List<string>
                         {
-                            "csv"
-                        }
-                    } 
-                }
+                            "csv",
+                        },
+                    },
+                },
             };
             var path = await saveFileBox.ShowAsync(this);
 
@@ -218,8 +321,8 @@ namespace QuectelController.Views
                 return;
             }
 
-            var records = Enumerable.Range(0, RSRPx.Count).Select(x => 
-                new MeasurementRow(RSRPx[x], RSRPy[x],RSRQx[x], RSRQy[x], SINRx[x],SINRy[x]));
+            var records = Enumerable.Range(0, RSRP_5G.Count).Select(x => 
+                new MeasurementRow(Time[x], RSRP_5G[x], RSRQ_5G[x], SINR_5G[x], RSRP_LTE[x], RSRQ_LTE[x], SINR_LTE[x]));
             using var writer = new StreamWriter(path);
             using var csvWriter = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
             csvWriter.WriteRecords(records);
@@ -227,7 +330,7 @@ namespace QuectelController.Views
 
         private async void Import(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog saveFileBox = new OpenFileDialog
+            OpenFileDialog openFileBox = new OpenFileDialog
             {
                 Title = "Open csv file...",
                 AllowMultiple = false,
@@ -238,18 +341,18 @@ namespace QuectelController.Views
                         Name = "CSV file",
                         Extensions = new List<string>
                         {
-                            "csv"
-                        }
-                    }
-                }
+                            "csv",
+                        },
+                    },
+                },
             };
-            var path = await saveFileBox.ShowAsync(this);
+            var path = await openFileBox.ShowAsync(this);
 
             if (path == null)
             {
                 return;
             }
-            
+
             using var reader = new StreamReader(path.FirstOrDefault());
             using var csvReader = new CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture); 
             MeasurementRow[] records;
@@ -259,46 +362,52 @@ namespace QuectelController.Views
             }
             catch (Exception ex)
             {
-                MessageBoxes.ShowError("Import error", "Error while importing the file, check if the file is in the right csv format");
+                MessageBoxes.ShowError(this,"Import error", "Error while importing the file, check if the file is in the right csv format");
                 return;
             }
 
             if (records?.Any() == false)
             {
-                MessageBoxes.ShowError("Import error", "Imported list is empty");
+                MessageBoxes.ShowError(this, "Import error", "Imported list is empty");
                 return;
             }
-            RSRPx = records.Select(x => x.RSRPx).ToList();
-            RSRPy = records.Select(x => x.RSRPy).ToList();
-            RSRQx = records.Select(x => x.RSRQx).ToList();
-            RSRQy = records.Select(x => x.RSRQy).ToList();
-            SINRx = records.Select(x => x.SINRx).ToList();
-            SINRy = records.Select(x => x.SINRy).ToList();
+            RSRP_5G = records.Select(x => x.RSRP_5G).ToList();
+            RSRQ_5G = records.Select(x => x.RSRQ_5G).ToList();
+            SINR_5G = records.Select(x => x.SINR_5G).ToList();
+            RSRP_LTE = records.Select(x => x.RSRP_LTE).ToList();
+            RSRQ_LTE = records.Select(x => x.RSRQ_LTE).ToList();
+            SINR_LTE = records.Select(x => x.SINR_LTE).ToList();
+            Time = records.Select(x => x.Time).ToList();
 
             Refresh();
         }
 
         private async void ExportImage(object sender, RoutedEventArgs e)
         {
-            //todo zamést
-
-            SaveFileDialog SaveFileBox = new SaveFileDialog();
-            SaveFileBox.Title = "Save image As...";
-            List<FileDialogFilter> Filters = new List<FileDialogFilter>();
-            FileDialogFilter filter = new FileDialogFilter();
-            List<string> extension = new List<string>();
-            extension.Add("png");
-            filter.Extensions = extension;
-            filter.Name = "PNG file";
-            Filters.Add(filter);
-            SaveFileBox.Filters = Filters;
-            SaveFileBox.DefaultExtension = "png";
-            var path = await SaveFileBox.ShowAsync(this);
+            SaveFileDialog saveFileBox = new SaveFileDialog
+            {
+                Title = "Save Image As...",
+                DefaultExtension = "png",
+                Filters = new List<FileDialogFilter>()
+                {
+                    new FileDialogFilter()
+                    {
+                        Name = "PNG file",
+                        Extensions = new List<string>
+                        {
+                            "png",
+                        },
+                    },
+                },
+            };
+            var path = await saveFileBox.ShowAsync(this);
 
             if (path != null)
             {
-                Bitmap img = new Bitmap(plot.Plot.GetBitmap()); //!May not work in some operating systems like Rasbian for RPI etc (Bitmap not fully implemented on these platforms)
+                Bitmap img = new Bitmap(RSRQplot.Plot.GetBitmap());
+                Bitmap img2 = new Bitmap(RSRPplot.Plot.GetBitmap()); // May not work in some operating systems like Rasbian for RPI etc (Bitmap not fully implemented on these platforms)
                 img.Save(path, ImageFormat.Png);
+                img2.Save("RSRP" + path, ImageFormat.Png);
             }
         }
 

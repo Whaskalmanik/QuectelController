@@ -15,16 +15,11 @@ namespace QuectelController.Communication
         string Description { get; }
         CommandCategory Category { get; }
         IReadOnlyList<ICommandParameter> AvailableParameters { get; }
-
-
         string GetRawCommand();
         string CreateExecuteCommand();
         string CreateTestCommand();
         string CreateReadCommand();
         string CreateWriteCommand(IEnumerable<ICommandParameter> commandParameters);
-  
         string FormatOutput(string rawOutput);
-
-
     }
 }

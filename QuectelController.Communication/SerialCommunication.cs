@@ -1,111 +1,118 @@
-﻿using RJCP.IO.Ports;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
+using RJCP.IO.Ports;
 
 namespace QuectelController.Communication
 {
     public class SerialCommunication : IDisposable
     {
-        SerialPortStream Stream;
+        private readonly SerialPortStream stream;
         private bool disposedValue;
 
-        public string Interface { get; set; }
-        public int Baudrate { get; set; }
-        public int DataBits { get; set; }
-        public Parity Parity { get; set; }
-        public StopBits StopBits { get; set; }
-        public IObservable<string> ReceivedCharactersObservable { get; private set; }
-
-        public SerialCommunication(string _interface, int _baudrate,int _dataBits, Parity _parity, StopBits _stopBits)
+        public SerialCommunication(string @interface, int baudrate, int dataBits, Parity parity, StopBits stopBits)
         {
-            Interface = _interface;
-            Baudrate = _baudrate;
-            DataBits = _dataBits;
-            Parity = _parity;
-            StopBits = _stopBits;
+            Interface = @interface;
+            Baudrate = baudrate;
+            DataBits = dataBits;
+            Parity = parity;
+            StopBits = stopBits;
 
-            if (Interface == null) return;
-            Stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);
+            if (Interface == null)
+            {
+                return;
+            }
+
+            stream = new SerialPortStream(Interface, Baudrate, DataBits, Parity, StopBits);
         }
+
+        public string Interface { get; set; }
+
+        public int Baudrate { get; set; }
+
+        public int DataBits { get; set; }
+
+        public Parity Parity { get; set; }
+
+        public StopBits StopBits { get; set; }
+
+        public IObservable<string> ReceivedCharactersObservable { get; private set; }
 
         public static List<string> GetSerialPorts()
         {
             return SerialPortStream.GetPortNames().ToList();
         }
 
-        public bool isOpen()
+        public bool IsOpen()
         {
-            if (Stream == null)
+            if (stream == null)
             {
                 return false;
             }
-            if (!Stream.IsOpen)
+
+            if (!stream.IsOpen)
             {
                 return false;
             }
+
             return true;
         }
 
         public void Open()
-        {   
-            if(Stream == null)
+        {
+            if (stream == null)
             {
                 return;
             }
 
-            if(Stream.IsOpen )
+            if (stream.IsOpen)
             {
                 return;
             }
-            Stream.Open();
-            
-            Stream.WriteTimeout = 5000;
-            Stream.ReadTimeout = 5000;
+
+            stream.Open();
+            stream.WriteTimeout = 5000;
+            stream.ReadTimeout = 5000;
 
             ReceivedCharactersObservable = Observable.FromEvent<EventHandler<SerialDataReceivedEventArgs>, SerialDataReceivedEventArgs>(
                 x => (obj, args) => x(args),
-                x => Stream.DataReceived += x,
-                x => Stream.DataReceived -= x)
+                x => stream.DataReceived += x,
+                x => stream.DataReceived -= x)
                 .Where(x => x.EventType == SerialData.Chars)
-                .Select(x => Stream.ReadExisting());
-            
+                .Select(x => stream.ReadExisting());
         }
 
-
-        private void Close() 
+        private void Close()
         {
-            if (Stream == null)
+            if (stream == null)
             {
                 return;
             }
 
-            if (!Stream.IsOpen)
+            if (!stream.IsOpen)
             {
                 return;
             }
+
             ReceivedCharactersObservable = Observable.Empty<string>();
-            Stream.Close();
+            stream.Close();
         }
 
         public void Write(string message)
         {
-            using var writer = new StreamWriter(Stream,Encoding.ASCII,1024,true);
+            using var writer = new StreamWriter(stream,Encoding.ASCII,1024,true);
             writer.Write(message);
             writer.Write('\r');
-
-            //todo TimeoutException
         }
 
         public string Read()
         {
-            using var reader = new StreamReader(Stream, Encoding.ASCII, false, 1024, true);
+            using var reader = new StreamReader(stream, Encoding.ASCII, false, 1024, true);
             return reader.ReadLine();
         }
-
 
         protected virtual void Dispose(bool disposing)
         {
@@ -115,6 +122,7 @@ namespace QuectelController.Communication
                 {
                     Close();
                 }
+
                 disposedValue = true;
             }
         }

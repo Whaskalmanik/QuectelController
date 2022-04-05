@@ -1,51 +1,76 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using PropertyChanged;
 using QuectelController.Communication;
+using QuectelController.Communication.Commands.Phonebook;
+using QuectelController.Views;
 using ReactiveUI;
 using RJCP.IO.Ports;
-using QuectelController.Communication.Commands.Phonebook;
-using System.Collections.ObjectModel;
-using System.Reflection;
-using System.ComponentModel;
-using PropertyChanged;
-using System.Reactive.Linq;
-using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Models;
-using Avalonia.Controls;
-using Avalonia.Styling;
-using MessageBox.Avalonia.Enums;
-using QuectelController.Views;
-using System.Threading.Tasks;
-using Avalonia.Controls.ApplicationLifetimes;
-using System.IO;
-using Avalonia;
-using Avalonia.Platform;
-using System.Threading;
 
 namespace QuectelController.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     {
-        SerialCommunication serialCommunication;
+        SerialCommunication _serialCommunication;
+
+        public MainWindowViewModel()
+        {
+            OpenMeasurementCommand = ReactiveCommand.Create<Task>(OpenMeasurement);
+            ConnectCommand = ReactiveCommand.Create(Connect);
+            DisconnectCommand = ReactiveCommand.Create(Disconnect);
+            SendCommand = ReactiveCommand.Create(Send);
+            ExecuteCommand = ReactiveCommand.Create<IATCommand>(Execute);
+            WriteCommand = ReactiveCommand.Create<IATCommand, Task>(Write);
+            ReadCommand = ReactiveCommand.Create<IATCommand>(Read);
+            TestCommand = ReactiveCommand.Create<IATCommand>(Test);
+            ExportHistoryCommand = ReactiveCommand.Create<Task>(ExportCommands);
+            ExportLogCommand = ReactiveCommand.Create<Task>(ExportLog);
+            ImportHistoryCommand = ReactiveCommand.Create<Task>(ImportLog);
+            ShowHistoryCommand = ReactiveCommand.Create<Task>(ShowHistoryWindow);
+            ExecuteHistoryCommand = ReactiveCommand.Create<Task>(ExecuteHistory);
+            SelectDefualtCommand = ReactiveCommand.Create<IATCommand, Task>(SelectDefault);
+            ClosingCommand = ReactiveCommand.Create(Closing);
+            CommandsHistory = new List<string>();
+            CommandsList = FillList();
+            Categories = GetCategories();
+
+            FilteredCategories = new ObservableCollection<TreeViewCategory>(Categories);
+            SerialPorts = SerialCommunication.GetSerialPorts();
+            SerialPort = SerialPorts.FirstOrDefault();
+            Baudrate = Baudrates[1];
+            DataBits = DataBitsList[3];
+            ToSearchValue
+                .Throttle(TimeSpan.FromSeconds(0.5))
+                .Select(x => x?.Trim())
+                .Where(x => x != null)
+                .DistinctUntilChanged()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(Search);
+        }
+
         public List<IATCommand> CommandsList { get; }
         public List<string> CommandsHistory { get; set; }
-        
-
-        //Listy
-        public List<string> SerialPorts => SerialCommunication.GetSerialPorts();
+        public List<string> SerialPorts { get; set; }
         public List<int> Baudrates { get; } = new List<int>() { 4800, 9600, 19200, 38400, 57600, 115200 };
         public List<int> DataBitsList { get; } = new List<int>() { 5, 6, 7, 8, 16 };
         public List<Parity> Parities { get; } = Enum.GetValues<Parity>().ToList();
         public List<StopBits> StopBitsList { get; } = Enum.GetValues<StopBits>().ToList();
 
-        //Commandy
         public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
         public ReactiveCommand<Unit, Unit> DisconnectCommand { get; }
         public ReactiveCommand<Unit, Unit> SendCommand { get; }
-
         public ReactiveCommand<IATCommand, Unit> ExecuteCommand { get; }
         public ReactiveCommand<IATCommand, Unit> ReadCommand { get; }
         public ReactiveCommand<IATCommand, Task> SelectDefualtCommand { get; }
@@ -59,7 +84,6 @@ namespace QuectelController.ViewModels
         public ReactiveCommand<Unit, Task> OpenMeasurementCommand { get; }
         public ReactiveCommand<Unit, Unit> ClosingCommand { get; }
 
-        //Zvolené
         public string SerialPort { get; set; }
         public int Baudrate { get; set; }
         public Parity Parity { get; set; }
@@ -69,51 +93,18 @@ namespace QuectelController.ViewModels
         public string TerminalString { get; set; }
         private StringBuilder TerminalStringBuilder { get; set; } = new StringBuilder();
         private IDisposable SerialCharactersSubscriptions { get; set; }
-
         private bool CanSend { get; set; } = false;
-        public bool isProgressBarVissible { get; set; } = false;
-
+        public bool IsProgressBarVissible { get; set; } = false;
         public int TerminalTextChangedCount { get; set; }
         private string StatusBarColor { get; set; } = "Red";
         private string StatusBar { get; set; } = "Disconnected";
         private double ProgressValue { get; set; } = 0;
 
+
         [DoNotNotify]
         public Reactive.Bindings.ReactiveProperty<string> ToSearchValue { get; set; } = new Reactive.Bindings.ReactiveProperty<string>();
         public ObservableCollection<TreeViewCategory> Categories { get; init; }
         public ObservableCollection<TreeViewCategory> FilteredCategories { get; set; }
-
-
-        public MainWindowViewModel()
-        {
-            OpenMeasurementCommand = ReactiveCommand.Create<Task>(OpenMeasurement);
-            ConnectCommand = ReactiveCommand.Create(Connect);
-            DisconnectCommand = ReactiveCommand.Create(Disconnect);
-            SendCommand = ReactiveCommand.Create(Send);
-            ExecuteCommand = ReactiveCommand.Create<IATCommand>(Execute);
-            WriteCommand = ReactiveCommand.Create<IATCommand,Task>(Write);
-            ReadCommand = ReactiveCommand.Create<IATCommand>(Read);
-            TestCommand = ReactiveCommand.Create<IATCommand>(Test);
-            ExportHistoryCommand = ReactiveCommand.Create<Task>(ExportCommands);
-            ExportLogCommand = ReactiveCommand.Create<Task>(ExportLog);
-            ImportHistoryCommand = ReactiveCommand.Create<Task>(ImportLog);
-            ShowHistoryCommand = ReactiveCommand.Create<Task>(ShowHistoryWindow);
-            ExecuteHistoryCommand = ReactiveCommand.Create<Task>(ExecuteHistory);
-            SelectDefualtCommand = ReactiveCommand.Create<IATCommand,Task>(SelectDefault);
-            ClosingCommand = ReactiveCommand.Create(Closing);
-            CommandsHistory = new List<string>();
-            CommandsList = FillList();
-            Categories = GetCategories();
-            FilteredCategories = new ObservableCollection<TreeViewCategory>(Categories);
-            ToSearchValue
-                .Throttle(TimeSpan.FromSeconds(0.5))
-                .Select(x => x?.Trim())
-                .Where(x => x != null)
-                .DistinctUntilChanged()
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(Search);
-        }
-
         private ObservableCollection<TreeViewCategory> GetCategories()
         {
             return new ObservableCollection<TreeViewCategory>(
@@ -129,98 +120,119 @@ namespace QuectelController.ViewModels
                             x.Select(y =>
                             new TreeViewItem()
                             {
-                                Command = y
+                                Command = y,
                             })
-                            .ToList())
+                            .ToList()),
                     })
-                .OrderBy(x => x.CommandCategory)
-                );
+                .OrderBy(x => x.CommandCategory));
         }
 
         private void Closing()
         {
             Disconnect();
         }
+
         private async Task ExportCommands()
         {
-            SaveFileDialog SaveFileBox = new SaveFileDialog();
-            SaveFileBox.Title = "Save Commands History As...";
-            List<FileDialogFilter> Filters = new List<FileDialogFilter>();
-            FileDialogFilter filter = new FileDialogFilter();
-            List<string> extension = new List<string>();
-            extension.Add("log");
-            filter.Extensions = extension;
-            filter.Name = "Log file";
-            Filters.Add(filter);
-            SaveFileBox.Filters = Filters;
-
-            SaveFileBox.DefaultExtension = "log";
-
-            if (!CommandsHistory.Any())
+            SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                MessageBoxes.ShowError("History error", "Cannot export empty list");
-                return;
-            }
+                Title = "Save Commands As...",
+                DefaultExtension = "log",
+                Filters = new List<FileDialogFilter>()
+                {
+                    new FileDialogFilter()
+                    {
+                        Name = "Log file",
+                        Extensions = new List<string>
+                        {
+                            "log",
+                        },
+                    },
+                },
+            };
 
             if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var path = await SaveFileBox.ShowAsync(desktop.MainWindow);
+                if (!CommandsHistory.Any())
+                {
+                    MessageBoxes.ShowError(desktop.MainWindow, "History error", "Cannot export empty list");
+                    return;
+                }
+
+                var path = await saveFileDialog.ShowAsync(desktop.MainWindow);
                 if (path == null)
                 {
                     return;
                 }
+
                 using (TextWriter tw = new StreamWriter(path))
                 {
                     foreach (string line in CommandsHistory)
+                    {
                         tw.WriteLine(line);
+                    }
                 }
             }
         }
+
         private async Task ExportLog()
         {
-            SaveFileDialog SaveFileBox = new SaveFileDialog();
-            SaveFileBox.Title = "Save Log As...";
-            List<FileDialogFilter> Filters = new List<FileDialogFilter>();
-            FileDialogFilter filter = new FileDialogFilter();
-            List<string> extension = new List<string>();
-            extension.Add("log");
-            filter.Extensions = extension;
-            filter.Name = "Log file";
-            Filters.Add(filter);
-            SaveFileBox.Filters = Filters;
-            SaveFileBox.DefaultExtension = "log";
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Title = "Save Commands As...",
+                DefaultExtension = "log",
+                Filters = new List<FileDialogFilter>()
+                {
+                    new FileDialogFilter()
+                    {
+                        Name = "Log file",
+                        Extensions = new List<string>
+                        {
+                            "log",
+                        },
+                    },
+                },
+            };
 
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var path = await SaveFileBox.ShowAsync(desktop.MainWindow);
+                var path = await saveFileDialog.ShowAsync(desktop.MainWindow);
                 if (path == null)
                 {
                     return;
                 }
+
                 await File.WriteAllTextAsync(path, TerminalString);
             }
         }
 
         private async Task ImportLog()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Open log";
-            List<FileDialogFilter> Filters = new List<FileDialogFilter>();
-            FileDialogFilter filter = new FileDialogFilter();
-            List<string> extension = new List<string>();
-            extension.Add("log");
-            filter.Extensions = extension;
-            filter.Name = "Log file";
-            Filters.Add(filter);
-            openFileDialog.Filters = Filters;
-            openFileDialog.AllowMultiple = false;
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Open csv file...",
+                AllowMultiple = false,
+                Filters = new List<FileDialogFilter>()
+                {
+                    new FileDialogFilter()
+                    {
+                        Name = "CSV file",
+                        Extensions = new List<string>
+                        {
+                            "csv",
+                        },
+                    },
+                },
+            };
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var path = await openFileDialog.ShowAsync(desktop.MainWindow);
-                if(path == null)
+
+                if (path == null)
                 {
                     return;
                 }
+
                 var logFile = File.ReadAllLines(path.FirstOrDefault());
                 CommandsHistory = new List<string>(logFile);
             }
@@ -234,10 +246,12 @@ namespace QuectelController.ViewModels
                 await window.ShowDialog(desktop.MainWindow);
             }
 
-            if (window.selectedValue == null) return;
+            if (window.selectedValue == null)
+            {
+                return;
+            }
 
             ToSendValue = window.selectedValue;
-
         }
 
         private async Task ExecuteHistory()
@@ -246,9 +260,14 @@ namespace QuectelController.ViewModels
 
             if (CommandsHistory.Count == 0)
             {
-                MessageBoxes.ShowError("History", "Cannot execute with empty history");
+                if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    MessageBoxes.ShowError(desktop.MainWindow,"History", "Cannot execute with empty history");
+                }
+
                 return;
             }
+
             if (!CommandsHistory.Any())
             {
                 return;
@@ -256,10 +275,11 @@ namespace QuectelController.ViewModels
 
             StatusBar = "Executing";
             StatusBarColor = "Orange";
-            isProgressBarVissible = true;
+            IsProgressBarVissible = true;
             ProgressValue = 0;
-            int max = temp.Count();
-            double increment = 100 / max;
+            int max = temp.Count;
+            double increment = 100.0 / max;
+
             foreach (string command in temp)
             {
                 ToSendValue = command;
@@ -267,21 +287,27 @@ namespace QuectelController.ViewModels
                 Send();
                 await Task.Delay(TimeSpan.FromSeconds(2));
             }
-            isProgressBarVissible = false;
+
+            IsProgressBarVissible = false;
             ProgressValue = 0;
             StatusBar = "Connected";
             StatusBarColor = "Green";
         }
 
-
         private async Task OpenMeasurement()
         {
-            Window window = new MeasurementWindow(serialCommunication);
+            MeasurementWindow window = new MeasurementWindow(_serialCommunication);
 
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 UnsubscribeFromSerial();
                 await window.ShowDialog(desktop.MainWindow);
+                if (window.ConnectionTimeout)
+                {
+                    Disconnect();
+                    return;
+                }
+
                 SubscribeToSerial();
             }
         }
@@ -290,14 +316,16 @@ namespace QuectelController.ViewModels
         {
             TerminalStringBuilder.Append(output);
             TerminalString = TerminalStringBuilder.ToString();
-            TerminalTextChangedCount++;
+
+            Observable.Timer(TimeSpan.FromSeconds(0.3)).SubscribeOn(RxApp.MainThreadScheduler).Subscribe(x => TerminalTextChangedCount++);
         }
 
         private void SubscribeToSerial()
         {
-            SerialCharactersSubscriptions = serialCommunication.ReceivedCharactersObservable
+            SerialCharactersSubscriptions = _serialCommunication.ReceivedCharactersObservable
     .Subscribe(OnStringReceived);
         }
+
         private void UnsubscribeFromSerial()
         {
             SerialCharactersSubscriptions?.Dispose();
@@ -306,14 +334,15 @@ namespace QuectelController.ViewModels
 
         private void Connect()
         {
-            if (serialCommunication != null)
+            if (_serialCommunication != null)
             {
                 return;
             }
+
             try
             {
-                serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
-                serialCommunication.Open();
+                _serialCommunication = new SerialCommunication(SerialPort, Baudrate, DataBits, Parity, StopBits);
+                _serialCommunication.Open();
                 SubscribeToSerial();
 
                 StatusBar = "Connected";
@@ -324,49 +353,63 @@ namespace QuectelController.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBoxes.ShowError("Connection error",ex.Message);
+                if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    MessageBoxes.ShowError(desktop.MainWindow,"Connection error", ex.Message);
+                }
+
                 Disconnect();
-                return;
             }
-
-
         }
+
         private void Disconnect()
         {
-            if (serialCommunication == null)
+            if (_serialCommunication == null)
             {
                 return;
             }
+
+            SerialPorts = SerialCommunication.GetSerialPorts();
             StatusBar = "Disconnected";
             StatusBarColor = "Red";
             CanSend = false;
             UnsubscribeFromSerial();
-            serialCommunication.Dispose();
-            serialCommunication = null;
+            _serialCommunication.Dispose();
+            _serialCommunication = null;
         }
+
         private void Send()
-        {          
-            if (serialCommunication == null)
+        {
+            if (_serialCommunication == null)
             {
                 return;
             }
-            if(ToSendValue == null)
+
+            if (ToSendValue == null)
             {
                 return;
             }
-            if(!ToSendValue.Trim().Any())
+
+            if (!ToSendValue.Trim().Any())
             {
                 return;
-            } 
+            }
+
             try
             {
-                serialCommunication.Write(ToSendValue);
+                _serialCommunication.Write(ToSendValue);
             }
-            catch(Exception ex)
+            catch (TimeoutException ex)
             {
-                MessageBoxes.ShowError("Connection Error",ex.Message);
+                if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    MessageBoxes.ShowError(desktop.MainWindow,"Connection Error", ex.Message);
+                }
+
+                Disconnect();
                 return;
             }
+
             TerminalStringBuilder.AppendLine(ToSendValue).AppendLine();
             CommandsHistory.Add(ToSendValue);
             TerminalString = TerminalStringBuilder.ToString();
@@ -381,13 +424,21 @@ namespace QuectelController.ViewModels
         private async Task SelectDefault(IATCommand command)
         {
             if (command.CanExecute)
+            {
                 Execute(command);
+            }
             else if (command.CanWrite)
+            {
                 await Write(command);
+            }
             else if (command.CanRead)
+            {
                 Read(command);
+            }
             else
+            {
                 Test(command);
+            }
         }
 
         private async Task Write(IATCommand command)
@@ -397,6 +448,7 @@ namespace QuectelController.ViewModels
                 ToSendValue = command.CreateWriteCommand(Array.Empty<ICommandParameter>());
                 return;
             }
+
             var window = new WriteWindow(command);
             window.Title = command.Name;
 
@@ -405,30 +457,36 @@ namespace QuectelController.ViewModels
                 await window.ShowDialog(desktop.MainWindow);
             }
 
-            if (window.SelectedValues == null) return;
+            if (window.SelectedValues == null)
+            {
+                return;
+            }
 
             var parameters = command.AvailableParameters.Select(x => x.Clone() as ICommandParameter).ToArray();
 
-            for (int i =0;i<parameters.Length;i++)
+            for (int i = 0; i < parameters.Length; i++)
             {
                 if ((bool)window.isIgnored && window.SelectedValues[i] == null)
                 {
                     continue;
                 }
-                parameters[i].Value = window.SelectedValues[i];
-            }
-            
-            ToSendValue = command.CreateWriteCommand(parameters);
 
+                parameters[i].Value = window.SelectedValues[i]; 
+            }
+
+            ToSendValue = command.CreateWriteCommand(parameters);
         }
+
         private void Read(IATCommand command)
         {
             ToSendValue = command.CreateReadCommand();
         }
+
         private void Test(IATCommand command)
         {
             ToSendValue = command.CreateTestCommand();
         }
+
         private void Search(string input)
         {
             var filtered = Categories
@@ -438,26 +496,27 @@ namespace QuectelController.ViewModels
                 .Select(x => new TreeViewCategory()
                 {
                     CommandCategory = x.Key.CommandCategory,
-                    Items = new ObservableCollection<TreeViewItem>(x.Select(y => y.Command))
+                    Items = new ObservableCollection<TreeViewItem>(x.Select(y => y.Command)),
                 });
             FilteredCategories = new ObservableCollection<TreeViewCategory>(filtered);
         }
 
         private bool MatchesFilter(IATCommand command, string input)
         {
-            if (String.IsNullOrWhiteSpace(input))
+            if (string.IsNullOrWhiteSpace(input))
             {
                 return true;
             }
 
             List<bool> conditions = new List<bool>();
-            foreach(var token in input.Split(" ").Select(x => x.Trim().ToLower()))
+            foreach (var token in input.Split(" ").Select(x => x.Trim().ToLower()))
             {
                 bool containsDescription = command.Description.ToLower().Contains(token.ToLower());
                 bool containsName = command.Name.ToLower().Contains(token.ToLower());
                 bool containsCommand = command.GetRawCommand().ToLower().Contains(token.ToLower());
                 conditions.Add(containsName || containsDescription || containsCommand);
             }
+
             return conditions.All(x => x);
         }
 

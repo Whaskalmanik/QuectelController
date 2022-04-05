@@ -25,10 +25,6 @@ namespace QuectelController.Views
             
         }
 
-        private void CloseButton(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
 
     }
 }

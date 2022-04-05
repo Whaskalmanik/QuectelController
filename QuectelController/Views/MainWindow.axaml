@@ -29,15 +29,15 @@
   <DockPanel LastChildFill="True">
     <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,Auto,*,Auto" RowDefinitions="33,33,33,33,33,33" Margin="4">
       <Label Margin="0,1,5,0" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Serial Port</Label>
-      <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="0" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding SerialPort}" Items="{Binding SerialPorts}"></ComboBox>
+      <ComboBox IsEnabled="{Binding !CanSend}" Width="100" Margin="0,1,5,0" Grid.Row="0" Grid.Column="1" SelectedItem="{Binding SerialPort}" Items="{Binding SerialPorts}"></ComboBox>
       <Label Margin="0,1,5,0" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Baudrate</Label>
-      <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="1" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding Baudrate}" Items="{Binding Baudrates}"></ComboBox>
+      <ComboBox IsEnabled="{Binding !CanSend}" Width="100" Margin="0,1,5,0" Grid.Row="1" Grid.Column="1" SelectedItem="{Binding Baudrate}" Items="{Binding Baudrates}"></ComboBox>
       <Label Margin="0,1,5,0" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Data bits</Label>
-      <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="2" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding DataBits}" Items="{Binding DataBitsList}" ></ComboBox>
+      <ComboBox IsEnabled="{Binding !CanSend}" Width="100" Margin="0,1,5,0" Grid.Row="2" Grid.Column="1" SelectedItem="{Binding DataBits}" Items="{Binding DataBitsList}" ></ComboBox>
       <Label Margin="0,1,5,0" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center">Stop bits</Label>
-      <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="3" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding StopBits}" Items="{Binding StopBitsList}"></ComboBox>
+      <ComboBox IsEnabled="{Binding !CanSend}" Width="100" Margin="0,1,5,0" Grid.Row="3" Grid.Column="1" SelectedItem="{Binding StopBits}" Items="{Binding StopBitsList}"></ComboBox>
       <Label Margin="0,1,5,0" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">Parity</Label>
-      <ComboBox Width="100" Margin="0,1,5,0" Grid.Row="4" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding Parity}" Items="{Binding Parities}"></ComboBox>
+      <ComboBox IsEnabled="{Binding !CanSend}" Width="100" Margin="0,1,5,0" Grid.Row="4" Grid.Column="1" SelectedItem="{Binding Parity}" Items="{Binding Parities}"></ComboBox>
       <Button IsEnabled="{Binding CanSend}" Command="{Binding DisconnectCommand}" Margin="0,1,0,0" HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="0"  Foreground="White" Background="Red" Content="Disconnect"/>
       <Button IsEnabled="{Binding !CanSend}" Command="{Binding ConnectCommand}" Margin="0,1,5,0"  HorizontalAlignment="Stretch" Grid.Row="5" Grid.Column="1" Foreground="White" Background="Green" Content="Connect"/>
       <TextBox Grid.Row="0" Grid.Column="2" Watermark="Search" Text="{Binding ToSearchValue.Value}"  ></TextBox>
@@ -74,7 +74,7 @@
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="2" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Load History" Command="{Binding ImportHistoryCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="3" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Export History" Command="{Binding ExportHistoryCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="4" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Export Log" Command="{Binding ExportLogCommand}"/>
-      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="5" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Measurement" Command="{Binding OpenMeasurementCommand}"/>
+      <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="5" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" IsEnabled="{Binding CanSend}" Content="Measurement" Command="{Binding OpenMeasurementCommand}"/>
     </Grid>
     <Border DockPanel.Dock="Bottom" BorderThickness="0.5" BorderBrush="Black">
       <Grid Margin="4.5,0,4,3"  RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
@@ -82,7 +82,7 @@
         <Label Name="StatusBar" FontSize="10" Foreground="{Binding StatusBarColor}" Grid.Row="2" Grid.Column="2" Content="{Binding StatusBar}" HorizontalContentAlignment="Center"/>
       </Grid>
     </Border>
-    <Grid Margin="4.5,0,4,1" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" DockPanel.Dock="Bottom">
+    <Grid Margin="4.5,0,4,1" ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" DockPanel.Dock="Bottom">
       <Button  VerticalAlignment="Stretch" IsEnabled="{Binding CanSend}" Command="{Binding SendCommand}" Width="100" Grid.Row="0" Grid.Column="1"  Foreground="White" Background="MediumSlateBlue" Content="Send" HotKey="Enter"/>
       <TextBox Grid.Row="0" Grid.Column="0" Watermark="Command to be sent" Text="{Binding ToSendValue}"></TextBox>
     </Grid>

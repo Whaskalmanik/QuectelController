@@ -12,24 +12,22 @@
     <Grid Margin="4.5,0,4,5" DockPanel.Dock="Bottom" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto,Auto">
       <Button Grid.Row="3" Click="Close" Foreground="White" Background="MediumSlateBlue" Grid.Column="3" Content="Close" Width="80" HorizontalContentAlignment="Center"/>
     </Grid>
-    <ScrollViewer Margin="4.5,0,4,5">
-      <Grid Name="GridLayout" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" >
-      </Grid>
-    </ScrollViewer>
-    <StackPanel DockPanel.Dock="Left">
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="Start" Background="Green" Content="Start" />
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="Stop" Background="Red" Content="Stop"/>
+    <StackPanel Margin="4.5,0,4,5" DockPanel.Dock="Left">
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0" Name="StartBtn" Foreground="White" Click="Start" Background="Green" Content="Start" />
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0" IsEnabled="false" Name="CloseBtn" Foreground="White" Click="Stop" Background="Red" Content="Stop"/>
       <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="Export" Background="MediumSlateBlue" Content="Export as .csv"/>
       <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="ExportImage" Background="MediumSlateBlue" Content="Export as .png"/>
       <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="Import" Background="MediumSlateBlue" Content="Import"/>
       <RadioButton  IsChecked="true" Name="SAMode" GroupName="Mode" Content="SA Mode" />
       <RadioButton Name="ENDCMode" GroupName="Mode" Content="EN-DC Mode" />
       <RadioButton Name="LTEMode" GroupName="Mode" Content="LTE Mode" />
-      <RadioButton Name="WCDMAMode" GroupName="Mode" Content="WCDMA Mode" />
     </StackPanel>
-    <Border Margin="4.5,0,4,5" BorderThickness="1" BorderBrush="Black">
-      <ScottPlot:AvaPlot Name="AvaPlot1"/>
+    <Border BorderBrush="Black" BorderThickness="1">
+      <Grid Name="MainGrid" ColumnDefinitions="*" RowDefinitions="*,*">
+          <ScottPlot:AvaPlot Name="AvaPlot1" Grid.Row="0" Grid.Column="0"/>
+          <ScottPlot:AvaPlot Name="AvaPlot2" Grid.Row="1" Grid.Column="0"/>
+      </Grid>
     </Border>
+      
   </DockPanel>
-
 </Window>
