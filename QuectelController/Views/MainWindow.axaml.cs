@@ -13,18 +13,14 @@ namespace QuectelController.Views
         public MainWindow()
         {
             InitializeComponent();
-#if DEBUG   
+#if DEBUG
             this.AttachDevTools();
-#endif  
-            //this.FindControl<TextBlock>("SearchTB").Tapped += MainWindow_Tapped; ;
+#endif
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            
         }
-
-
-    }
+   }
 }

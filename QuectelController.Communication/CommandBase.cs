@@ -23,6 +23,7 @@ namespace QuectelController.Communication
             {
                 throw new InvalidOperationException();
             }
+
             return RawCommand;
         }
 
@@ -32,6 +33,7 @@ namespace QuectelController.Communication
             {
                 throw new InvalidOperationException();
             }
+
             return RawCommand + "=?";
         }
 
@@ -41,6 +43,7 @@ namespace QuectelController.Communication
             {
                 throw new InvalidOperationException();
             }
+
             return RawCommand + "?";
         }
 
@@ -50,12 +53,19 @@ namespace QuectelController.Communication
             {
                 throw new InvalidOperationException();
             }
+
             if (!CheckParameters(commandParameters))
             {
                 return "Invalid parameters";
             }
+
             StringBuilder sb = new StringBuilder(CreateCommandInternal(commandParameters));
             return sb.ToString(0, sb.Length - 1);
+        }
+
+        public string GetRawCommand()
+        {
+            return RawCommand;
         }
 
         public virtual string FormatOutput(string rawOutput)
@@ -75,22 +85,18 @@ namespace QuectelController.Communication
 
         protected string CreateParametersString(IEnumerable<ICommandParameter> commandParameters)
         {
-            if(!CheckParameters(commandParameters))
+            if (!CheckParameters(commandParameters))
             {
                 return "Invalid parameters";
             }
+
             StringBuilder stringBuilder = new StringBuilder();
-            foreach(var command in commandParameters)
+            foreach (var command in commandParameters)
             {
                 stringBuilder.Append(command.ToCommandString()).Append(",") ;
             }
-            var lenght = stringBuilder.Length;
-            return stringBuilder.ToString();
-        }
 
-        public string GetRawCommand()
-        {
-            return RawCommand;
+            return stringBuilder.ToString();
         }
     }
 }

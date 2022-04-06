@@ -355,7 +355,7 @@ namespace QuectelController.ViewModels
             {
                 if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
-                    MessageBoxes.ShowError(desktop.MainWindow,"Connection error", ex.Message);
+                    MessageBoxes.ShowError(desktop.MainWindow,"Connection error", "Port cannot be null!");
                 }
 
                 Disconnect();

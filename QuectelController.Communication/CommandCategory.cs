@@ -29,7 +29,5 @@ namespace QuectelController.Communication
         AudioCommands = 9,
         [Description("Hardware Related Commands")]
         HardwareRelatedCommands = 10,
-        
-
     }
 }

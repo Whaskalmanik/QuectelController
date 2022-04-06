@@ -6,16 +6,6 @@ namespace QuectelController.Communication.CommandParameters
 {
     public class IntegerListCommandParameter : IFiniteSetCommandParameter
     {
-        public IDictionary<string, object> AvailableValues { get; init; }
-
-        public string Name { get; init; }
-
-        public string Description { get; init; }
-
-        public object Value { get; set; }
-
-        public bool Optional { get; init; }
-
         public IntegerListCommandParameter(string name, string description, IDictionary<string, object> availableValues, bool optional)
         {
             Name = name;
@@ -24,12 +14,21 @@ namespace QuectelController.Communication.CommandParameters
             AvailableValues = availableValues;
         }
 
+        public IDictionary<string, object> AvailableValues { get; init; }
+        public string Name { get; init; }
+
+        public string Description { get; init; }
+
+        public object Value { get; set; }
+
+        public bool Optional { get; init; }
         public string ToCommandString()
         {
             if (Value == null)
             {
-                return "";
+                return string.Empty;
             }
+
             return Value.ToString();
         }
 

@@ -93,7 +93,7 @@
             <ia:CallMethodAction MethodName="ScrollToEnd" TargetObject="{Binding #TerminalScoller}"/>
           </ia:DataTriggerBehavior>
         </i:Interaction.Behaviors>
-        <TextBox IsReadOnly="True" Padding ="5" FontSize="12" FontFamily="lucon.ttf" Foreground="Black" Text="{Binding TerminalString}"></TextBox>
+        <TextBox IsReadOnly="True" Padding ="5" FontSize="12" FontFamily="cour.ttf" Foreground="Black" Text="{Binding TerminalString}"></TextBox>
       </ScrollViewer>
     </Border>
   </DockPanel>

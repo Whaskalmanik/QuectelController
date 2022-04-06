@@ -84,6 +84,24 @@ namespace QuectelController.Communication
                 .Where(x => x.EventType == SerialData.Chars)
                 .Select(x => stream.ReadExisting());
         }
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void Write(string message)
+        {
+            using var writer = new StreamWriter(stream, Encoding.ASCII, 1024, true);
+            writer.Write(message);
+            writer.Write('\r');
+        }
+
+        public string Read()
+        {
+            using var reader = new StreamReader(stream, Encoding.ASCII, false, 1024, true);
+            return reader.ReadLine();
+        }
 
         private void Close()
         {
@@ -101,19 +119,6 @@ namespace QuectelController.Communication
             stream.Close();
         }
 
-        public void Write(string message)
-        {
-            using var writer = new StreamWriter(stream,Encoding.ASCII,1024,true);
-            writer.Write(message);
-            writer.Write('\r');
-        }
-
-        public string Read()
-        {
-            using var reader = new StreamReader(stream, Encoding.ASCII, false, 1024, true);
-            return reader.ReadLine();
-        }
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -125,12 +130,6 @@ namespace QuectelController.Communication
 
                 disposedValue = true;
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

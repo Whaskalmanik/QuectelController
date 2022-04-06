@@ -151,7 +151,7 @@ namespace QuectelController.Views
                 MessageBoxes.ShowError(this,"Connection error", "Connection is not established");
                 return;
             }
-           
+
             ActivateRadioButton(false);
             try
             {
@@ -209,31 +209,54 @@ namespace QuectelController.Views
             counter += MEASURE_FREQUENCY;
         }
 
+        private double ParseValue(string value, int from, int to)
+        {
+            double temp = double.Parse(value);
+            if(from <= temp && temp <= to)
+            {
+                return temp;
+            }
+            else
+            {
+                return int.MaxValue;
+            }
+        }
+
+
         private void Parse(string toParse)
         {
             var separated = toParse.Split(',');
             if (SAMode.IsChecked == true)
             {
-                RSRP_5G.Add(double.Parse(separated[12]));
-                RSRQ_5G.Add(double.Parse(separated[13]));
-                SINR_5G.Add(double.Parse(separated[14]));
+                RSRP_5G.Add(ParseValue(separated[12], -140, -44));
+                RSRQ_5G.Add(ParseValue(separated[13], -20, -3));
+                SINR_5G.Add(ParseValue(separated[14], -20, 30));
+
+                RSRP_LTE.Add(int.MaxValue);
+                SINR_LTE.Add(int.MaxValue);
+                RSRQ_LTE.Add(int.MaxValue);
             }
 
             if (ENDCMode.IsChecked == true)
             {
-                RSRP_5G.Add(double.Parse(separated[12]));
-                RSRQ_5G.Add(double.Parse(separated[13]));
-                SINR_5G.Add(double.Parse(separated[15]));
-                RSRP_LTE.Add(double.Parse(separated[22]));
-                SINR_LTE.Add(double.Parse(separated[23])); 
-                RSRQ_LTE.Add(double.Parse(separated[24]));
+                RSRP_5G.Add(ParseValue(separated[12], -140, -44));
+                RSRQ_5G.Add(ParseValue(separated[13], -20, -3));
+                SINR_5G.Add(ParseValue(separated[15], -20, -30));
+
+                RSRP_LTE.Add(ParseValue(separated[22], -140, -44));
+                SINR_LTE.Add(ParseValue(separated[23], -20, -3));
+                RSRQ_LTE.Add(ParseValue(separated[24], -20, -30));
             }
 
             if (LTEMode.IsChecked == true)
             {
-                RSRP_LTE.Add(double.Parse(separated[13]));
-                RSRQ_LTE.Add(double.Parse(separated[14]));
-                SINR_LTE.Add(double.Parse(separated[16]));
+                RSRP_5G.Add(int.MaxValue);
+                RSRQ_5G.Add(int.MaxValue);
+                SINR_5G.Add(int.MaxValue);
+
+                RSRP_LTE.Add(ParseValue(separated[13], -140, -44));
+                RSRQ_LTE.Add(ParseValue(separated[14], -20, -3));
+                SINR_LTE.Add(ParseValue(separated[16], -20, -30));
             }
 
             Time.Add(counter);
@@ -386,7 +409,7 @@ namespace QuectelController.Views
         {
             SaveFileDialog saveFileBox = new SaveFileDialog
             {
-                Title = "Save Image As...",
+                Title = "Save Images As...",
                 DefaultExtension = "png",
                 Filters = new List<FileDialogFilter>()
                 {

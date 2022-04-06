@@ -10,7 +10,6 @@ namespace QuectelController.Communication
         bool CanTest { get; }
         bool CanRead { get; }
         bool CanWrite { get; }
-
         string Name { get; }
         string Description { get; }
         CommandCategory Category { get; }

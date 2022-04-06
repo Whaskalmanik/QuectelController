@@ -7,6 +7,5 @@ namespace QuectelController.Communication
     public interface IFiniteSetCommandParameter :ICommandParameter
     {
         IDictionary<string,object> AvailableValues { get; }
-
     }
 }
