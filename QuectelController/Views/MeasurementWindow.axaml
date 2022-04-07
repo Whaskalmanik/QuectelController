@@ -15,12 +15,14 @@
     <StackPanel Margin="4.5,0,4,5" DockPanel.Dock="Left">
       <Button HorizontalAlignment="Stretch" Margin="0,2,1,0" Name="StartBtn" Foreground="White" Click="Start" Background="Green" Content="Start" />
       <Button HorizontalAlignment="Stretch" Margin="0,2,1,0" IsEnabled="false" Name="CloseBtn" Foreground="White" Click="Stop" Background="Red" Content="Stop"/>
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="Export" Background="MediumSlateBlue" Content="Export as .csv"/>
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="ExportImage" Background="MediumSlateBlue" Content="Export as .png"/>
-      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0"  Foreground="White" Click="Import" Background="MediumSlateBlue" Content="Import"/>
-      <RadioButton  IsChecked="true" Name="SAMode" GroupName="Mode" Content="SA Mode" />
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0" Name="ReloadBtn" Foreground="White" Click="Reload" Background="OrangeRed" Content="Reload"/>
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0" Foreground="White" Click="Export" Background="MediumSlateBlue" Content="Export as .csv"/>
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0" Foreground="White" Click="ExportImage" Background="MediumSlateBlue" Content="Export as .png"/>
+      <Button HorizontalAlignment="Stretch" Margin="0,2,1,0" Foreground="White" Click="Import" Background="MediumSlateBlue" Content="Import"/>
+      <RadioButton IsChecked="true" Name="SAMode" GroupName="Mode" Content="SA Mode" />
       <RadioButton Name="ENDCMode" GroupName="Mode" Content="EN-DC Mode" />
       <RadioButton Name="LTEMode" GroupName="Mode" Content="LTE Mode" />
+      <TextBox IsReadOnly="True" TextWrapping="Wrap" FontSize="12" Foreground="Black" Text="This window is used for mesearing RSRP, RSRQ and SINR. First select in what mode your module operates on (AT+QNWPREFCFG). For mesearing values is used command AT+QENG" />
     </StackPanel>
     <Border BorderBrush="Black" BorderThickness="1">
       <Grid Name="MainGrid" ColumnDefinitions="*" RowDefinitions="*,*">

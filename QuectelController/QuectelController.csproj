@@ -30,4 +30,9 @@
   <ItemGroup>
     <ProjectReference Include="..\QuectelController.Communication\QuectelController.Communication.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Update="Assets\avalonia-logo.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+  </ItemGroup>
 </Project>

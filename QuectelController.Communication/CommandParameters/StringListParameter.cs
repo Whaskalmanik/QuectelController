@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace QuectelController.Communication.CommandParameters
 {
@@ -9,7 +10,7 @@ namespace QuectelController.Communication.CommandParameters
         public StringListParameter(string name, string description, IDictionary<string, object> availableValues, bool optional)
         {
             Name = name;
-            Description = description;
+            Description = Regex.Replace(description.Trim(), @"[^\S]+", " ");
             Optional = optional;
             AvailableValues = availableValues;
         }

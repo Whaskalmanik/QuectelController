@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace QuectelController.Views
 {
@@ -20,7 +21,7 @@ namespace QuectelController.Views
         public bool? isIgnored = false;
 
         private Grid gridLayout;
-        private TextBlock describtion;
+        private TextBox describtion;
         private List<Control> parameterEditorControls = new List<Control>();
         private readonly IATCommand command;
         private CheckBox checkBox;
@@ -44,7 +45,7 @@ namespace QuectelController.Views
         public WriteWindow(IATCommand command) : this()
         {
             gridLayout = this.FindControl<Grid>("GridLayout");
-            describtion = this.FindControl<TextBlock>("TextBoxDescribtion");
+            describtion = this.FindControl<TextBox>("TextBoxDescribtion");
             checkBox = this.FindControl<CheckBox>("CheckBox");
             Populate(command);
             this.command = command;
@@ -53,13 +54,18 @@ namespace QuectelController.Views
         private void Populate(IATCommand command)
         {
             gridLayout.RowDefinitions.Clear();
-            describtion.Text = command.Description;
+            describtion.Text = Regex.Replace(command.Description.Trim(), @"[^\S]+", " ");
             foreach ((var parameter, var index) in command.AvailableParameters.Select((x, i) => (x, i)))
             {
                 gridLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
                 Label label = new Label();
                 label.Content = parameter.Name;
+                if (!parameter.Optional)
+                {
+                    label.Content += "*";
+                }
+
                 gridLayout.Children.Add(label);
                 label.SetValue(Grid.ColumnProperty, 0);
                 label.SetValue(Grid.RowProperty, index);

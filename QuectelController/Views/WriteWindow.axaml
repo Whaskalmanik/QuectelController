@@ -10,7 +10,7 @@
 
 
   <DockPanel LastChildFill="True">
-    <TextBlock DockPanel.Dock="Top"  Margin="4.5,0,4,5" Name="TextBoxDescribtion" FontSize="12" Foreground="Black" Text="ahoj"></TextBlock>
+    <TextBox IsReadOnly="True" TextWrapping="Wrap" DockPanel.Dock="Top"  Margin="4.5,0,4,5" Name="TextBoxDescribtion" FontSize="12" Foreground="Black" Text="ahoj"></TextBox>
     <Grid Margin="4.5,0,4,5" DockPanel.Dock="Bottom" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto,Auto">
       <Button Grid.Row="3" Background="Green" Click="SubmitButton" Foreground="White" Grid.Column="3" Content="Submit" Width="80" HorizontalContentAlignment="Center"/>
       <Button Grid.Row="3" Background="Red" Click="CloseButton" Foreground="White" Grid.Column="2" Content="Close" Width="80" HorizontalContentAlignment="Center"/>

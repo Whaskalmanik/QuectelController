@@ -15,8 +15,6 @@
         Title="Quectel Modem Controller"
         Name="MainWindow">
 
-
-
   <i:Interaction.Behaviors>
     <ia:EventTriggerBehavior EventName="Closing" SourceObject="{Binding #MainWindow}">
       <ia:InvokeCommandAction Command="{Binding ClosingCommand}"/>
