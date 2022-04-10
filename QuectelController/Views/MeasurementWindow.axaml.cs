@@ -84,17 +84,7 @@ namespace QuectelController.Views
         {
             this.serial = serial;
 
-            RSRQplot = this.Find<AvaPlot>("AvaPlot1");
-            RSRQplot.Plot.Legend(true, ScottPlot.Alignment.LowerRight);
-            RSRQplot.Plot.Title("RSRQ, RSRP");
-            RSRQplot.Plot.XLabel("Time [sec]");
-            RSRQplot.Plot.YLabel("Value [dB]");
-
-            RSRPplot = this.Find<AvaPlot>("AvaPlot2");
-            RSRPplot.Plot.Legend(true, ScottPlot.Alignment.LowerRight);
-            RSRPplot.Plot.Title("RSRP");
-            RSRPplot.Plot.XLabel("Time [sec]");
-            RSRPplot.Plot.YLabel("Value [dBm]");
+            SetGraphs();
 
             RSRQPlot = RenderGraph("5G Reference Signal Received Quality (RSRQ)", Color.Green, Time, RSRQ_5G, 0);
             RSRPPlot = RenderGraph("5G Reference Signal Received Power (RSRP)", Color.Red, Time, RSRP_5G, 0);
@@ -118,10 +108,27 @@ namespace QuectelController.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+        private void SetGraphs()
+        {
+            RSRQplot = this.Find<AvaPlot>("AvaPlot1");
+            RSRQplot.Plot.Legend(true, ScottPlot.Alignment.LowerRight);
+            RSRQplot.Plot.Title("RSRQ, SINR");
+            RSRQplot.Plot.XLabel("Time [sec]");
+            RSRQplot.Plot.YLabel("Value [dB]");
+
+            RSRPplot = this.Find<AvaPlot>("AvaPlot2");
+            RSRPplot.Plot.Legend(true, ScottPlot.Alignment.LowerRight);
+            RSRPplot.Plot.Title("RSRP");
+            RSRPplot.Plot.XLabel("Time [sec]");
+            RSRPplot.Plot.YLabel("Value [dBm]");
+        }
+
         public void ResetPlots()
         {
             RSRQplot.Reset();
             RSRPplot.Reset();
+
+            SetGraphs();
         }
 
         private void ClearLists()

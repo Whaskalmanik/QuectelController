@@ -22,7 +22,7 @@
       <RadioButton IsChecked="true" Name="SAMode" GroupName="Mode" Content="SA Mode" />
       <RadioButton Name="ENDCMode" GroupName="Mode" Content="EN-DC Mode" />
       <RadioButton Name="LTEMode" GroupName="Mode" Content="LTE Mode" />
-      <TextBox IsReadOnly="True" TextWrapping="Wrap" FontSize="12" Foreground="Black" Text="This window is used for mesearing RSRP, RSRQ and SINR. First select in what mode your module operates on (AT+QNWPREFCFG). For mesearing values is used command AT+QENG" />
+      <TextBox Width="150" IsReadOnly="True" TextWrapping="Wrap" FontSize="12" Foreground="Black" Text="This window is used for mesearing RSRP, RSRQ and SINR. First select in what mode your module operates on (AT+QNWPREFCFG). For mesearing values is used command AT+QENG" />
     </StackPanel>
     <Border BorderBrush="Black" BorderThickness="1">
       <Grid Name="MainGrid" ColumnDefinitions="*" RowDefinitions="*,*">
