@@ -6,6 +6,7 @@
         x:Class="QuectelController.Views.WriteWindow"
         Icon="/Assets/avalonia-logo.ico"
         MinHeight="400" MinWidth="400"
+        Height="400" Width="400"
         Title="WriteWindow">
 
 

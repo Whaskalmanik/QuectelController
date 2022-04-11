@@ -466,12 +466,11 @@ namespace QuectelController.ViewModels
 
             for (int i = 0; i < parameters.Length; i++)
             {
-                if ((bool)window.isIgnored && window.SelectedValues[i] == null)
+                if ((bool)window.isIgnored || window.SelectedValues[i] == null)
                 {
                     continue;
                 }
-
-                parameters[i].Value = window.SelectedValues[i]; 
+                parameters[i].Value = window.SelectedValues[i];
             }
 
             ToSendValue = command.CreateWriteCommand(parameters);

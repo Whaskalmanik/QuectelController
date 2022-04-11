@@ -6,7 +6,6 @@ namespace QuectelController.Communication
 {
     public abstract class CommandBase : IATCommand
     {
-
         public abstract bool CanExecute { get; }
         public abstract bool CanTest { get; }
         public abstract bool CanRead { get; }
@@ -60,7 +59,7 @@ namespace QuectelController.Communication
             }
 
             StringBuilder sb = new StringBuilder(CreateCommandInternal(commandParameters));
-            return sb.ToString(0, sb.Length - 1);
+            return sb.ToString(0, sb.Length);
         }
 
         public string GetRawCommand()
@@ -93,7 +92,7 @@ namespace QuectelController.Communication
             StringBuilder stringBuilder = new StringBuilder();
             foreach (var command in commandParameters)
             {
-                stringBuilder.Append(command.ToCommandString()).Append(",") ;
+                stringBuilder.Append(command.ToCommandString()).Append(',');
             }
 
             return stringBuilder.ToString();

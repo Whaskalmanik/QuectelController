@@ -39,7 +39,7 @@ namespace QuectelController.Views
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
-#endif      
+#endif
         }
 
         public WriteWindow(IATCommand command) : this()
@@ -101,18 +101,20 @@ namespace QuectelController.Views
         private List<object> GetValues()
         {
             List<object> values = new List<object>();
-            foreach((var parameter, var control) in command.AvailableParameters.Zip(parameterEditorControls))
+            foreach ((var parameter, var control) in command.AvailableParameters.Zip(parameterEditorControls))
             {
                 var editor = GetParameterEditor(parameter);
                 values.Add(editor.GetValue(control));
             }
+
             return values;
         }
-            
+
         public void CloseButton(object sender, RoutedEventArgs e)
         {
             Close();
         }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
