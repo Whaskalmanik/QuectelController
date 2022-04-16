@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace QuectelController.Communication
 {
     public abstract class CommandBase : IATCommand
     {
+
         public abstract bool CanExecute { get; }
         public abstract bool CanTest { get; }
         public abstract bool CanRead { get; }
@@ -14,6 +16,7 @@ namespace QuectelController.Communication
         public abstract string Description { get; }
         public abstract CommandCategory Category { get; }
         public abstract IReadOnlyList<ICommandParameter> AvailableParameters { get; }
+        protected static Regex WriteCommandSanitizingRegex { get; } = new Regex(@"(?<command>.*?),*$", RegexOptions.Compiled);
         protected abstract string RawCommand { get; }
 
         public string CreateExecuteCommand()
@@ -59,7 +62,7 @@ namespace QuectelController.Communication
             }
 
             StringBuilder sb = new StringBuilder(CreateCommandInternal(commandParameters));
-            return sb.ToString(0, sb.Length);
+            return WriteCommandSanitizingRegex.Match(sb.ToString()).Groups["command"].Value;
         }
 
         public string GetRawCommand()
@@ -90,9 +93,13 @@ namespace QuectelController.Communication
             }
 
             StringBuilder stringBuilder = new StringBuilder();
+            string separator = string.Empty;
             foreach (var command in commandParameters)
             {
-                stringBuilder.Append(command.ToCommandString()).Append(',');
+                stringBuilder
+                    .Append(separator)
+                    .Append(command.ToCommandString());
+                separator = ",";
             }
 
             return stringBuilder.ToString();

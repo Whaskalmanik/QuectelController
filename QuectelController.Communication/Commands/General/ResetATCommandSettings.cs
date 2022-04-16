@@ -28,6 +28,6 @@ namespace QuectelController.Communication.Commands.General
             } ,false)
         };
 
-        protected override string RawCommand => "AT&F";
+        protected override string RawCommand => "AT&F0";
     }
 }

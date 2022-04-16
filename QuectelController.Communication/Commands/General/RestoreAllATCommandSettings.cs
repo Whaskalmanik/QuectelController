@@ -30,6 +30,6 @@ AT&F.Afterwards the AT command settings are restored from the user-defined profi
             } ,false)
         };
 
-        protected override string RawCommand => "ATZ";
+        protected override string RawCommand => "ATZ0";
     }
 }

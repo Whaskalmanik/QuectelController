@@ -29,6 +29,6 @@ The AT command settings are automatically restored from the user-defined profile
             } ,false)
         };
 
-        protected override string RawCommand => "AT&W";
+        protected override string RawCommand => "AT&W0";
     }
 }

@@ -19,6 +19,7 @@ using System.Linq;
 using System.Drawing.Imaging;
 using CsvHelper;
 using ScottPlot.Renderable;
+using System.Text.RegularExpressions;
 
 namespace QuectelController.Views
 {
@@ -55,6 +56,7 @@ namespace QuectelController.Views
 
         private Button StartBtn;
         private Button CloseBtn;
+        private Button ReloadBtn;
 
         private RadioButton SAMode;
         private RadioButton ENDCMode;
@@ -86,18 +88,12 @@ namespace QuectelController.Views
 
             SetGraphs();
 
-            RSRQPlot = RenderGraph("5G Reference Signal Received Quality (RSRQ)", Color.Green, Time, RSRQ_5G, 0);
-            RSRPPlot = RenderGraph("5G Reference Signal Received Power (RSRP)", Color.Red, Time, RSRP_5G, 0);
-            SINRPlot = RenderGraph("5G Signal-to-Interface plus Noise Ratio (SINR)", Color.Blue, Time, SINR_5G, 0);
-            SecondRSRQPlot = RenderGraph("LTE Reference Signal Received Quality (RSRQ)", Color.OrangeRed, Time, RSRQ_LTE, 0);
-            SecondRSRPPlot = RenderGraph("LTE Reference Signal Received Power (RSRP)", Color.DarkCyan, Time, RSRP_LTE, 0);
-            SecondSINRPlot = RenderGraph("LTE Signal-to-Interface plus Noise Ratio (SINR", Color.DarkBlue, Time, SINR_LTE, 0);
-
             SAMode = this.Find<RadioButton>("SAMode");
             ENDCMode = this.Find<RadioButton>("ENDCMode");
             LTEMode = this.Find<RadioButton>("LTEMode");
             CloseBtn = this.Find<Button>("CloseBtn");
             StartBtn = this.Find<Button>("StartBtn");
+            ReloadBtn = this.Find<Button>("ReloadBtn");
 
             SerialCharactersSubscriptions = serial.ReceivedCharactersObservable
     .Subscribe(Receive);
@@ -121,14 +117,21 @@ namespace QuectelController.Views
             RSRPplot.Plot.Title("RSRP");
             RSRPplot.Plot.XLabel("Time [sec]");
             RSRPplot.Plot.YLabel("Value [dBm]");
+
+            RSRQPlot = RenderGraph("5G Reference Signal Received Quality (RSRQ)", Color.Green, Time, RSRQ_5G, 0);
+            RSRPPlot = RenderGraph("5G Reference Signal Received Power (RSRP)", Color.Red, Time, RSRP_5G, 0);
+            SINRPlot = RenderGraph("5G Signal-to-Interface plus Noise Ratio (SINR)", Color.Blue, Time, SINR_5G, 0);
+            SecondRSRQPlot = RenderGraph("LTE Reference Signal Received Quality (RSRQ)", Color.OrangeRed, Time, RSRQ_LTE, 0);
+            SecondRSRPPlot = RenderGraph("LTE Reference Signal Received Power (RSRP)", Color.DarkCyan, Time, RSRP_LTE, 0);
+            SecondSINRPlot = RenderGraph("LTE Signal-to-Interface plus Noise Ratio (SINR", Color.DarkBlue, Time, SINR_LTE, 0);
         }
 
         public void ResetPlots()
         {
-            RSRQplot.Reset();
-            RSRPplot.Reset();
-
-            SetGraphs();
+            RSRQplot.Plot.Clear();
+            RSRPplot.Plot.Clear();
+            RSRQplot.Refresh();
+            RSRPplot.Refresh();
         }
 
         private void ClearLists()
@@ -140,6 +143,7 @@ namespace QuectelController.Views
             RSRP_LTE.Clear();
             RSRQ_LTE.Clear();
             SINR_LTE.Clear();
+            Time.Clear();
         }
 
         private ScatterPlot RenderGraph(string label, Color color, List<double> x, List<double> y, int index)
@@ -180,13 +184,13 @@ namespace QuectelController.Views
                 StartBtn.IsEnabled = false;
                 MessageBoxes.ShowError(this, "Connection timeout", "Connection to the serial port timed out.");
             }
-
         }
 
         private void AllowStart(bool action)
         {
             CloseBtn.IsEnabled = !action;
             StartBtn.IsEnabled = action;
+            ReloadBtn.IsEnabled = action;
         }
 
         private void ActivateRadioButton(bool action)
@@ -222,25 +226,29 @@ namespace QuectelController.Views
             }
 
         }
+        private string RemoveNonNumberDigitsAndCharacters(string text)
+        {
+            var numericChars = "-0123456789".ToCharArray();
+            return new string(text.Where(c => numericChars.Any(n => n == c)).ToArray());
+        }
+
 
         private double ParseValue(string value, int from, int to)
         {
-            try
+            value = RemoveNonNumberDigitsAndCharacters(value);
+
+            if (double.TryParse(value, out var temp) && from <= temp && temp <= to)
             {
-                double temp = double.Parse(value);
-                if (from <= temp && temp <= to)
-                {
-                    return temp;
-                }
-                else
-                {
-                    return int.MaxValue;
-                }
+                return temp;
             }
-            catch (FormatException ex)
-            {
-                return int.MaxValue;
-            }
+
+            return int.MaxValue;
+        }
+
+        private string Calculate(string sinr)
+        {
+            double temp = double.Parse(sinr);
+            return (0.2 * temp * 10 - 20).ToString();
         }
 
         private void Parse(string toParse)
@@ -250,7 +258,7 @@ namespace QuectelController.Views
             {
                 RSRP_5G.Add(ParseValue(separated[12], -140, -44));
                 RSRQ_5G.Add(ParseValue(separated[13], -20, -3));
-                SINR_5G.Add(ParseValue(separated[14], -20, 30));
+                SINR_5G.Add(ParseValue(Calculate(separated[14]), -20, 30));
 
                 RSRP_LTE.Add(int.MaxValue);
                 SINR_LTE.Add(int.MaxValue);
@@ -259,13 +267,13 @@ namespace QuectelController.Views
 
             if (ENDCMode.IsChecked == true)
             {
-                RSRP_5G.Add(ParseValue(separated[22], -140, -44));
-                RSRQ_5G.Add(ParseValue(separated[23], -20, -3));
-                SINR_5G.Add(ParseValue(separated[24], -20, 30));
+                RSRP_5G.Add(ParseValue(separated[20], -140, -44));
+                RSRQ_5G.Add(ParseValue(separated[22], -20, -3));
+                SINR_5G.Add(ParseValue(Calculate(separated[21]), -20, 30));
 
                 RSRP_LTE.Add(ParseValue(separated[12], -140, -44));
                 RSRQ_LTE.Add(ParseValue(separated[13], -20, -3));
-                SINR_LTE.Add(ParseValue(separated[15], -20, 30));
+                SINR_LTE.Add(ParseValue(Calculate(separated[15]), -20, 30));
             }
 
             if (LTEMode.IsChecked == true)
@@ -276,7 +284,7 @@ namespace QuectelController.Views
 
                 RSRP_LTE.Add(ParseValue(separated[12], -140, -44));
                 RSRQ_LTE.Add(ParseValue(separated[13], -20, -3));
-                SINR_LTE.Add(ParseValue(separated[15], -20, 30));
+                SINR_LTE.Add(ParseValue(Calculate(separated[15]), -20, 30));
             }
 
             Time.Add(counter);
@@ -326,8 +334,11 @@ namespace QuectelController.Views
                 RSRQplot.Plot.Add(SecondSINRPlot);
             }
 
-            RSRQplot.Plot.AxisAuto();
-            RSRPplot.Plot.AxisAuto();
+            if(counter==0)
+            {
+                RSRQplot.Plot.AxisAuto();
+                RSRPplot.Plot.AxisAuto();
+            }     
             RSRQplot.Refresh();
             RSRPplot.Refresh();
         }
@@ -340,8 +351,9 @@ namespace QuectelController.Views
 
         private void Reload(object sender, RoutedEventArgs e)
         {
-            ResetPlots();
             ClearLists();
+            ResetPlots();
+            counter =0;
             ActivateRadioButton(true);
             AllowStart(true);
             PeriodicTask.Stop();
@@ -494,8 +506,8 @@ namespace QuectelController.Views
                 Bitmap img = new Bitmap(RSRQplot.Plot.GetBitmap());
                 Bitmap img2 = new Bitmap(RSRPplot.Plot.GetBitmap()); // May not work in some operating systems like Rasbian for RPI etc (Bitmap not fully implemented on these platforms)
 
-                img.Save(path + "RSRQ_SINR.png", ImageFormat.Png);
-                img2.Save(path + "RSRP.png", ImageFormat.Png);
+                img.Save(Path.Combine(path, "RSRQ_SINR.png"), ImageFormat.Png);
+                img2.Save(Path.Combine(path, "RSRP.png"), ImageFormat.Png);
             }
         }
 

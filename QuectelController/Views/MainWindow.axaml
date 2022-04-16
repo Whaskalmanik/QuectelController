@@ -73,6 +73,7 @@
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="3" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Export History" Command="{Binding ExportHistoryCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="4" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" Content="Export Log" Command="{Binding ExportLogCommand}"/>
       <Button HorizontalAlignment="Stretch" Margin="5,0,0,0" Grid.Row="5" Grid.Column="3" Foreground="White" Background="MediumSlateBlue" IsEnabled="{Binding CanSend}" Content="Measurement" Command="{Binding OpenMeasurementCommand}"/>
+
     </Grid>
     <Border DockPanel.Dock="Bottom" BorderThickness="0.5" BorderBrush="Black">
       <Grid Margin="4.5,0,4,3"  RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">

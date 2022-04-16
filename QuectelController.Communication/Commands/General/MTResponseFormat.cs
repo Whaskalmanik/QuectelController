@@ -29,6 +29,6 @@ namespace QuectelController.Communication.Commands.General
             } ,false)
         };
 
-        protected override string RawCommand => "ATV";
+        protected override string RawCommand => "ATV0";
     }
 }

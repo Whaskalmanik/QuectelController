@@ -210,16 +210,16 @@ namespace QuectelController.ViewModels
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Title = "Open csv file...",
+                Title = "Open log file...",
                 AllowMultiple = false,
                 Filters = new List<FileDialogFilter>()
                 {
                     new FileDialogFilter()
                     {
-                        Name = "CSV file",
+                        Name = "LOG file",
                         Extensions = new List<string>
                         {
-                            "csv",
+                            "log",
                         },
                     },
                 },
@@ -466,13 +466,17 @@ namespace QuectelController.ViewModels
 
             for (int i = 0; i < parameters.Length; i++)
             {
-                if ((bool)window.isIgnored || window.SelectedValues[i] == null)
-                {
-                    continue;
-                }
                 parameters[i].Value = window.SelectedValues[i];
             }
 
+            if (window.isIgnored == true)
+            {
+                var lastNotEmptyIndex = parameters
+                    .Select((x, index) => (Empty: x.Value == null && x.Optional, Index: (int?)index))
+                    .LastOrDefault(x => !x.Empty).Index;
+
+                parameters = parameters.Take((lastNotEmptyIndex + 1) ?? 0).ToArray();
+            }
             ToSendValue = command.CreateWriteCommand(parameters);
         }
 
