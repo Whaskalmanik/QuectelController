@@ -94,6 +94,7 @@ namespace QuectelController.ViewModels
         private StringBuilder TerminalStringBuilder { get; set; } = new StringBuilder();
         private IDisposable SerialCharactersSubscriptions { get; set; }
         private bool CanSend { get; set; } = false;
+        private bool CanConnect { get; set; } = true;
         public bool IsProgressBarVissible { get; set; } = false;
         public int TerminalTextChangedCount { get; set; }
         private string StatusBarColor { get; set; } = "Red";
@@ -155,7 +156,7 @@ namespace QuectelController.ViewModels
             {
                 if (!CommandsHistory.Any())
                 {
-                    MessageBoxes.ShowError(desktop.MainWindow, "History error", "Cannot export empty list");
+                    await MessageBoxes .ShowError(desktop.MainWindow, "History error", "Cannot export empty list");
                     return;
                 }
 
@@ -258,14 +259,20 @@ namespace QuectelController.ViewModels
         {
             List<string> temp = new List<string>(CommandsHistory);
 
-            if (CommandsHistory.Count == 0)
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                if (CommandsHistory.Count == 0)
                 {
-                    MessageBoxes.ShowError(desktop.MainWindow,"History", "Cannot execute with empty history");
+                    await MessageBoxes.ShowError(desktop.MainWindow, "History", "Cannot execute with empty history");
                 }
-
-                return;
+                else
+                {
+                    var value = await MessageBoxes.ShowQuestion(desktop.MainWindow, "Execute History", "Do you really execute whole command history?");
+                    if (value == MessageBox.Avalonia.Enums.ButtonResult.No)
+                    {
+                        return;
+                    }
+                }
             }
 
             if (!CommandsHistory.Any())
@@ -279,7 +286,8 @@ namespace QuectelController.ViewModels
             ProgressValue = 0;
             int max = temp.Count;
             double increment = 100.0 / max;
-
+            CanConnect = false;
+            CanSend = false;
             foreach (string command in temp)
             {
                 ToSendValue = command;
@@ -289,6 +297,8 @@ namespace QuectelController.ViewModels
             }
 
             IsProgressBarVissible = false;
+            CanConnect = true;
+            CanSend = true;
             ProgressValue = 0;
             StatusBar = "Connected";
             StatusBarColor = "Green";
@@ -347,6 +357,7 @@ namespace QuectelController.ViewModels
 
                 StatusBar = "Connected";
                 StatusBarColor = "Green";
+                CanConnect = false;
                 CanSend = true;
                 TerminalStringBuilder.Clear();
                 TerminalString = string.Empty;
@@ -355,7 +366,7 @@ namespace QuectelController.ViewModels
             {
                 if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
-                    MessageBoxes.ShowError(desktop.MainWindow,"Connection error", "Port cannot be null!");
+                   MessageBoxes.ShowError(desktop.MainWindow,"Connection error", "Port cannot be null!");
                 }
 
                 Disconnect();
@@ -373,6 +384,7 @@ namespace QuectelController.ViewModels
             StatusBar = "Disconnected";
             StatusBarColor = "Red";
             CanSend = false;
+            CanConnect = true;
             UnsubscribeFromSerial();
             _serialCommunication.Dispose();
             _serialCommunication = null;
@@ -440,7 +452,6 @@ namespace QuectelController.ViewModels
                 Test(command);
             }
         }
-
         private async Task Write(IATCommand command)
         {
             if (!command.AvailableParameters.Any())

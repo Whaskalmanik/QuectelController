@@ -36,6 +36,12 @@ namespace QuectelController.Views
 
         private void Parse(object sender, RoutedEventArgs e)
         {
+            if(listBox.SelectedItem==null)
+            {
+                selectedValue = null;
+                this.Close();
+                return;
+            }
             selectedValue = listBox.SelectedItem.ToString();
             this.Close();
         }

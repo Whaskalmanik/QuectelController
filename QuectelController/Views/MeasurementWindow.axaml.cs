@@ -81,7 +81,6 @@ namespace QuectelController.Views
             SerialCharactersSubscriptions = null;
         }
 
-
         public MeasurementWindow(SerialCommunication serial) : this()
         {
             this.serial = serial;
@@ -166,7 +165,7 @@ namespace QuectelController.Views
         {
             if (!serial.IsOpen())
             {
-                MessageBoxes.ShowError(this,"Connection error", "Connection is not established");
+                await MessageBoxes.ShowError(this,"Connection error", "Connection is not established");
                 return;
             }
 
@@ -182,7 +181,7 @@ namespace QuectelController.Views
                 ConnectionTimeout = true;
                 CloseBtn.IsEnabled = false;
                 StartBtn.IsEnabled = false;
-                MessageBoxes.ShowError(this, "Connection timeout", "Connection to the serial port timed out.");
+                await MessageBoxes.ShowError(this, "Connection timeout", "Connection to the serial port timed out.");
             }
         }
 
@@ -454,7 +453,7 @@ namespace QuectelController.Views
                     var records = csvReader.GetRecords<MeasurementRowENDC>().ToArray();
                     if (records?.Any() == false)
                     {
-                        MessageBoxes.ShowError(this, "Import error", "Imported list is empty");
+                        await MessageBoxes.ShowError(this, "Import error", "Imported list is empty");
                         return;
                     }
 
@@ -473,7 +472,7 @@ namespace QuectelController.Views
                     var records = csvReader.GetRecords<MeasurementRowLTE>().ToArray();
                     if (records?.Any() == false)
                     {
-                        MessageBoxes.ShowError(this, "Import error", "Imported list is empty");
+                        await MessageBoxes.ShowError(this, "Import error", "Imported list is empty");
                         return;
                     }
 
@@ -485,7 +484,8 @@ namespace QuectelController.Views
             }
             catch (Exception ex)
             {
-                MessageBoxes.ShowError(this, "Import error", "Error while importing the file, check if the file is in the right csv format");
+                await MessageBoxes.ShowError(this, "Import error", @"Error while importing the file, check if the file is in the right format.
+Are you in the right mode?");
                 return;
             }
 

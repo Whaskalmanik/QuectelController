@@ -10,7 +10,7 @@ namespace QuectelController
 {
     public static class MessageBoxes
     {
-        public static async void ShowWarning(Window window, string title, string message)
+        public static async Task<MessageBox.Avalonia.Enums.ButtonResult> ShowWarning(Window window, string title, string message)
         {
             var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
             new MessageBoxStandardParams
@@ -19,9 +19,10 @@ namespace QuectelController
                 ContentMessage = message,
                 Icon = MessageBox.Avalonia.Enums.Icon.Warning,
             });
-            await mb.Show(window);
+            return await mb.Show(window);
         }
-        public static async void ShowError(Window window, string title, string message)
+
+        public static async Task<MessageBox.Avalonia.Enums.ButtonResult> ShowError(Window window, string title, string message)
         {
             var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
             new MessageBoxStandardParams
@@ -30,8 +31,20 @@ namespace QuectelController
                 ContentMessage = message,
                 Icon = MessageBox.Avalonia.Enums.Icon.Error,
             });
-            await mb.Show(window);
+            return await mb.Show(window);
         }
 
+        public static async Task<MessageBox.Avalonia.Enums.ButtonResult> ShowQuestion(Window window, string title, string message)
+        {
+            var mb = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
+            new MessageBoxStandardParams
+            {
+                ContentTitle = title,
+                ContentMessage = message,
+                Icon = MessageBox.Avalonia.Enums.Icon.Question,
+                ButtonDefinitions = MessageBox.Avalonia.Enums.ButtonEnum.YesNo,
+            });
+            return await mb.ShowDialog(window);
+        }
     }
 }
